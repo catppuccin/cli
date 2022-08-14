@@ -1,0 +1,7 @@
+# Example Catppuccin RC
+app_name         : Wezterm # The app name
+path_name        : wezterm # The name of the program in the PATH.
+install_location : .       # The installation location. ~ means home dir, . means location of the app(according to PATH)
+install_files:             # Optional. Specifies which files to install.
+  - catppuccin.lua
+
