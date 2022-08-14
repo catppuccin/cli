@@ -5,7 +5,7 @@ import (
 	"os"
 	"io"
 	"os/exec"
-//  "gopkg.in/yaml.v3"
+  "gopkg.in/yaml.v3"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ type Program struct {
 			preference string
 		}
 		frappe []struct {
-			preference string
+			mode string
 		}
 		macchiato []struct {
 			preference string
@@ -29,6 +29,7 @@ type Program struct {
 		}
 	}
 	one_flavour bool
+	mode []string
 }
 
 func main() {
@@ -57,22 +58,28 @@ func main() {
 		}
 	}
 	fmt.Println("\nChecking for installed packages...\n")
-	for i := 0; i < len(packages); i++ {
-		path, err := exec.LookPath(packages[i])
-		if err != nil {
-			// Program is not installed/could not be detected
-			fmt.Printf("%s was not detected.\n", packages[i])
-			packages = remove_at(packages, i)
-		}
-		fmt.Printf("%s found at location %s.\n", packages[i], path)
-		rc := "https://raw.githubusercontent.com/catppuccin/" + packages[i] + "/main/.ctprc"
+	for i := 0; i < len(success); i++ {
+		rc := "https://raw.githubusercontent.com/catppuccin/" + success[i] + "/main/.ctprc"
 		res, err := http.Get(rc)
 		defer res.Body.Close()
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			fmt.Println("Failed to read body.")
 		} else {
-			fmt.Printf(".ctprc - \n%s", body)
+			ctprc := Program{}
+			err = yaml.Unmarshal([]byte(body), &ctprc)
+			if err != nil {
+				fmt.Printf("Failed to parse .ctprc for %s", success[i])
+			}
+			fmt.Println(ctprc)
+			path, err := exec.LookPath(success[i])
+			if err != nil {
+				// Program is not installed/could not be detected
+				fmt.Printf("%s was not detected.\n", success[i])
+				success = remove_at(success, i)
+			} else { 
+				fmt.Printf("%s found at location %s.\n", success[i], path)
+			}
 		}
 	}
 }
