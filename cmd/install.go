@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"catppuccin/installer/internal/pkg/structs"
@@ -7,10 +7,24 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	packages := os.Args[1:]
+func init() {
+	rootCmd.AddCommand(installCmd)
+}
+
+var installCmd = &cobra.Command{
+	Use: "install", 
+	Short: "Install programs",
+	Long: `Installs the programs listed from the official Catppuccin repos.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		installer(args)
+	},
+}
+
+func installer(packages []string) {
 
 	fmt.Println("Installing the follow packages...")
 	for i := 0; i < len(packages); i++ {
@@ -22,7 +36,7 @@ func main() {
 	for i := 0; i < len(packages); i++ {
 		repo := packages[i]
 		// Attempt to get the .catppuccinrc
-		rc := "https://raw.githubusercontent.com/catppuccin/" + repo + "/main/.ctprc"
+		rc := fmt.Sprintf("https://raw.githubusercontent.com/catppuccin/%s/main/.ctprc", repo)
 		res, err := http.Get(rc)
 		if err != nil {
 			fmt.Printf("\nFailed to make HTTP request: %s\n", err)
@@ -32,7 +46,7 @@ func main() {
 			fmt.Printf("%s does not have a .ctprc.\n", repo)
 			continue
 		} else {
-			success = append(success, repo)
+			success = append(success, string(repo))
 		}
 	}
 
@@ -50,6 +64,8 @@ func main() {
 
 		body, err := io.ReadAll(res.Body)
 
+		programs := []structs.Program{}
+
 		if err != nil {
 			fmt.Println("Failed to read body.")
 		} else {
@@ -62,9 +78,9 @@ func main() {
 			if err != nil {
 				// Program is not installed/could not be detected
 				fmt.Printf("%s was not detected.\n", ctprc.PathName)
-				success = removeAt(success, i)
 			} else {
 				fmt.Printf("%s found at location %s.\n", ctprc.PathName, path)
+				programs = append(programs, ctprc)
 			}
 		}
 	}
@@ -72,10 +88,6 @@ func main() {
 
 func genChezmoi(repo string, dir string, refresh int) string {
 	// Creates a chezmoi entry using the repo name, updates every week
-	res := fmt.Sprintf("%s:\n  type: git-repo\n  url: \"%s.git\"\n  refreshPeriod: %dh\n", dir, repo, refresh)
+	res := fmt.Sprintf("%s:\n  type: git-repo\n  url: \"%s.git\"\n  refreshPeriod: %dh\n\n", dir, repo, refresh)
 	return res
-}
-
-func removeAt(list []string, index int) []string {
-	return append(list[:index], list[index+1:]...)
 }
