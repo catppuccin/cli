@@ -58,13 +58,13 @@ func main() {
 				fmt.Printf("Failed to parse .ctprc for %s\n", success[i])
 			}
 			fmt.Println(ctprc)
-			path, err := exec.LookPath(success[i])
+			path, err := exec.LookPath(ctprc.PathName)
 			if err != nil {
 				// Program is not installed/could not be detected
-				fmt.Printf("%s was not detected.\n", success[i])
+				fmt.Printf("%s was not detected.\n", ctprc.PathName)
 				success = removeAt(success, i)
 			} else {
-				fmt.Printf("%s found at location %s.\n", success[i], path)
+				fmt.Printf("%s found at location %s.\n", ctprc.PathName, path)
 			}
 		}
 	}
