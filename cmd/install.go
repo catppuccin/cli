@@ -84,6 +84,7 @@ func installer(packages []string) {
 			}
 		}
 	}
+	// Part 3, create the .chezmoiexternal...
 }
 
 func genChezmoi(repo string, dir string, refresh int) string {
