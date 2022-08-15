@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"catppuccin/installer/internal/pkg/structs"
+	"catppuccin/uwu/internal/pkg/structs"
 	"fmt"
 	"io"
 	"net/http"

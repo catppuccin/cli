@@ -1,4 +1,4 @@
-module catppuccin/installer
+module catppuccin/uwu
 
 go 1.19
 
