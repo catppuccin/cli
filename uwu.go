@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"github.com/kylelemons/go-gypsy"
 	"io"
-	"os/exec"
-  "gopkg.in/yaml.v3"
 	"net/http"
+	"os"
+	"os/exec"
 )
 
+/*
 type Program struct {
 	app_name string
 	path_name string
@@ -31,6 +32,7 @@ type Program struct {
 	one_flavour bool
 	mode []string
 }
+*/
 
 func main() {
 	packages := os.Args[1:]
@@ -53,7 +55,7 @@ func main() {
 		if res.StatusCode != 200 {
 			fmt.Printf("%s does not have a .ctprc.\n", repo)
 			continue
-		} else { 
+		} else {
 			success = append(success, repo)
 		}
 	}
@@ -66,8 +68,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Failed to read body.")
 		} else {
-			ctprc := Program{}
-			err = yaml.Unmarshal([]byte(body), &ctprc)
+			config, err := yaml.Read(body)
 			if err != nil {
 				fmt.Printf("Failed to parse .ctprc for %s", success[i])
 			}
@@ -77,7 +78,7 @@ func main() {
 				// Program is not installed/could not be detected
 				fmt.Printf("%s was not detected.\n", success[i])
 				success = remove_at(success, i)
-			} else { 
+			} else {
 				fmt.Printf("%s found at location %s.\n", success[i], path)
 			}
 		}
