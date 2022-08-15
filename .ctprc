@@ -1,7 +1,31 @@
-# Example Catppuccin RC
-app_name         : Wezterm # The app name
-path_name        : wezterm # The name of the program in the PATH.
-install_location : .       # The installation location. ~ means home dir, . means location of the app(according to PATH)
-install_files:             # Optional. Specifies which files to install.
-  - catppuccin.lua
-
+# A Catppuccin RC file for Helix. In beta, specs may change.
+app_name         : Helix
+path_name        : hx
+install_location : .
+install_files:
+  - themes/
+install_flavours: # Specific flavours
+  latte:
+    default: # Default and no-italic variants
+      - themes/default/latte.toml
+    no-italics:
+      - themes/no-italics/latte.toml
+  frappe:
+    default:
+      - themes/default/frappe.toml
+    no-italics:
+      - themes/no-italics/frappe.toml
+  macchiato:
+    default:
+      - themes/default/macchiato.toml
+    no-italics:
+      - themes/no-italics/macchiato.toml
+  mocha:
+    default:
+      - themes/default/mocha.toml
+    no-italics:
+      - themes/no-italics/mocha.toml
+  to: themes/ # Install location
+one_flavour: false # Only one flavour?
+modes: # Additional modes
+  - no-italics
