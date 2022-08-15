@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"bytes"
+	"io"
 	"github.com/kylelemons/go-gypsy/yaml"
 	"net/http"
 	"os"
@@ -63,10 +65,13 @@ func main() {
 		rc := "https://raw.githubusercontent.com/catppuccin/" + success[i] + "/main/.ctprc"
 		res, err := http.Get(rc)
 		defer res.Body.Close()
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			fmt.Println("Failed to read body.")
 		} else {
-			ctprc, err := yaml.Parse(res.Body)
+			bufbody := bytes.NewBufferString(string(body))
+			fmt.Printf("%s\n", bufbody)
+			ctprc, err := yaml.Parse(bufbody)
 			if err != nil {
 				fmt.Printf("Failed to parse .ctprc for %s\n", success[i])
 			}
