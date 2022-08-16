@@ -29,7 +29,7 @@ type InstallFlavours struct {
 	Frappe    Flavour `yaml:"frappe"`
 	Macchiato Flavour `yaml:"macchiato"`
 	Mocha     Flavour `yaml:"mocha"`
-	To        string  `yaml:"to"`
+	To        []string  `yaml:"to"`
 }
 
 type Entry interface {}
