@@ -54,7 +54,7 @@ func installer(packages []string) {
 	fmt.Println("\nChecking for installed packages...")
 	programs := []structs.Program{}
 	programLocations := []string{}
-	programURLs := []string{}
+	programNames := []string{}
 	for i := 0; i < len(success); i++ {
 		rc := "https://raw.githubusercontent.com/catppuccin/" + success[i] + "/main/.ctprc"
 		res, err := http.Get(rc)
@@ -83,20 +83,37 @@ func installer(packages []string) {
 				// Append program to detected programs and add it's location to a seperate list.
 				programs = append(programs, ctprc)
 				programLocations = append(programLocations, path)
-				programURLs = append(programURLs, success[i])
+				programNames = append(programNames, success[i])
 			}
 		}
 	}
-	// Part 3, create the .chezmoiexternal...
-	chezmoiexternal := ""
+	// Part 3, clone the repo into staging dir
 	for i := 0; i < len(programs); i++ {
-		loc := programLocations[i]
+		//loc := programLocations[i]
 		ctprc := programs[i]
-		installLoc := handleDir(loc, ctprc.InstallLocation)
+		programName := programNames[i]
+		//installLoc := handleDir(loc, ctprc.InstallLocation)
 		fmt.Println(fmt.Sprint(ctprc.InstallFiles))
-		chezmoiexternal = genChezmoi(programURLs[i], installLoc, 168, fmt.Sprint(wrapQuotes(ctprc.InstallFiles)))
+		err := createStagingDir(programNames[i]) // Create directory with repo name
+		if err != nil {
+			// Directory already exists
+			fmt.Printf("Directory for %s already exists! Skipping %s...\n(Run uwu update to update packages.)", programName, programName)
+		} 
 	}  
-	fmt.Println(chezmoiexternal)
+}
+
+func createStagingDir(repo string) error {
+	_, err := os.Stat("stage")
+	if os.IsNotExist(err) {
+		os.Mkdir("stage", 0755)
+	}
+	_, err = os.Stat(fmt.Sprintf("stage/%s", repo))
+	if os.IsNotExist(err) {
+		os.Mkdir(fmt.Sprintf("stage/%s", repo), 0755)
+		return nil
+	} else {
+		return err
+	}	
 }
 
 func handleDir(fileLoc string, dir string) string {

@@ -24,6 +24,11 @@ type Program struct {
 	Modes           []string        `yaml:"modes"`
 }
 
+type OsChoice struct {
+	Windows string `yaml:"windows"`
+	Unix string `yaml: unix`
+}
+
 type InstallFlavours struct {
 	Latte     Flavour `yaml:"latte"`
 	Frappe    Flavour `yaml:"frappe"`
