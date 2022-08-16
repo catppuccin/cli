@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -51,6 +52,9 @@ func installer(packages []string) {
 	}
 
 	fmt.Println("\nChecking for installed packages...")
+	programs := []structs.Program{}
+	programLocations := []string{}
+	programURLs := []string{}
 	for i := 0; i < len(success); i++ {
 		rc := "https://raw.githubusercontent.com/catppuccin/" + success[i] + "/main/.ctprc"
 		res, err := http.Get(rc)
@@ -64,15 +68,11 @@ func installer(packages []string) {
 
 		body, err := io.ReadAll(res.Body)
 
-		programs := []structs.Program{}
 
 		if err != nil {
 			fmt.Println("Failed to read body.")
 		} else {
 			ctprc, err := structs.UnmarshalProgram(body)
-			if err != nil {
-				fmt.Printf("Failed to parse .ctprc for %s\n", success[i])
-			}
 			fmt.Println(ctprc)
 			path, err := exec.LookPath(ctprc.PathName)
 			if err != nil {
@@ -80,15 +80,48 @@ func installer(packages []string) {
 				fmt.Printf("%s was not detected.\n", ctprc.PathName)
 			} else {
 				fmt.Printf("%s found at location %s.\n", ctprc.PathName, path)
+				// Append program to detected programs and add it's location to a seperate list.
 				programs = append(programs, ctprc)
+				programLocations = append(programLocations, path)
+				programURLs = append(programURLs, success[i])
 			}
 		}
 	}
 	// Part 3, create the .chezmoiexternal...
+	chezmoiexternal := ""
+	for i := 0; i < len(programs); i++ {
+		loc := programLocations[i]
+		ctprc := programs[i]
+		installLoc := handleDir(loc, ctprc.InstallLocation)
+		fmt.Println(fmt.Sprint(ctprc.InstallFiles))
+		chezmoiexternal = genChezmoi(programURLs[i], installLoc, 168, fmt.Sprint(wrapQuotes(ctprc.InstallFiles)))
+	}  
+	fmt.Println(chezmoiexternal)
 }
 
-func genChezmoi(repo string, dir string, refresh int) string {
+func handleDir(fileLoc string, dir string) string {
+	// If install location begins with ./, replace the . with the fileLoc
+	if strings.HasPrefix(dir, "./") {
+		//Remove the dot, replace with fileLoc
+		dir = fmt.Sprintf("%s%s", fileLoc, dir[1:]) 
+	}
+	if dir == "." {
+		dir = fileLoc
+	}
+	return dir
+}
+
+func genChezmoi(repo string, dir string, refresh int, include string) string {
 	// Creates a chezmoi entry using the repo name, updates every week
-	res := fmt.Sprintf("%s:\n  type: git-repo\n  url: \"%s.git\"\n  refreshPeriod: %dh\n\n", dir, repo, refresh)
+	res := fmt.Sprintf("%s:\n  type: git-repo\n  url: \"https://github.com/catppuccin/%s.git\"\n  refreshPeriod: %dh\n  include: %s\n\n", dir, repo, refresh, include)
 	return res
 }
+
+func wrapQuotes(items []string) []string {
+	for i := 0; i < len(items); i++ {
+		items[i] = fmt.Sprintf("\"%s\"", items[i])
+	}
+	return items
+}
+
+
