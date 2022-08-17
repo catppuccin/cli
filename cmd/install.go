@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"catppuccin/uwu/internal/utils"
 	"os"
 	"os/exec"
 	"strings"
@@ -33,13 +34,13 @@ func installer(packages []string) {
 	for i := 0; i < len(packages); i++ {
 		fmt.Println(packages[i])
 	}
-
+	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
 	fmt.Println("\nGenerating chezmoi config...")
 	var success []string
 	for i := 0; i < len(packages); i++ {
 		repo := packages[i]
 		// Attempt to get the .catppuccinrc
-		rc := fmt.Sprintf("https://raw.githubusercontent.com/catppuccin/%s/main/.ctprc", repo)
+		rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.ctprc", org, repo)
 		res, err := http.Get(rc)
 		if err != nil {
 			fmt.Printf("\nFailed to make HTTP request: %s\n", err)
@@ -58,7 +59,7 @@ func installer(packages []string) {
 	programLocations := []string{}
 	programNames := []string{}
 	for i := 0; i < len(success); i++ {
-		rc := "https://raw.githubusercontent.com/catppuccin/" + success[i] + "/main/.ctprc"
+		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.ctprc"
 		res, err := http.Get(rc)
 
 		defer func(Body io.ReadCloser) {
@@ -125,12 +126,6 @@ func handleDir(fileLoc string, dir string) string {
 		dir = fileLoc
 	}
 	return dir
-}
-
-func genChezmoi(repo string, dir string, refresh int, include string) string {
-	// Creates a chezmoi entry using the repo name, updates every week
-	res := fmt.Sprintf("%s:\n  type: git-repo\n  url: \"https://github.com/catppuccin/%s.git\"\n  refreshPeriod: %dh\n  include: %s\n\n", dir, repo, refresh, include)
-	return res
 }
 
 func wrapQuotes(items []string) []string {

@@ -26,7 +26,7 @@ type Program struct {
 
 type OsChoice struct {
 	Windows string `yaml:"windows"`
-	Unix string `yaml: unix`
+	Unix string `yaml: "unix"`
 }
 
 type InstallFlavours struct {
