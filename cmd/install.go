@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"path"
+	"runtime"
 	"github.com/go-git/go-git/v5"
 	"io"
 	"net/http"
 	"catppuccin/uwu/internal/utils"
 	"os"
 	"os/user"
-	"path"
 	"strings"
 	"catppuccin/uwu/internal/pkg/structs"
 	"github.com/spf13/cobra"
@@ -71,19 +72,26 @@ func installer(packages []string) {
 		if err != nil {
 			fmt.Println("Failed to read body")
 		} else {
-
-			usr, _ := user.Current()
-			ctprc, _ := structs.UnmarshalProgram(body)
-			ctprc.InstallLocation = strings.Replace(ctprc.InstallLocation, "~", usr.HomeDir, -1)
-			_, err := os.Stat(ctprc.InstallLocation)
+			ctprc, err := structs.UnmarshalProgram(body)
+			if err != nil {
+				fmt.Println(".ctprc couldn't be unmarshaled correctly. Some data may be corrupted.")
+			}
+			fmt.Println(ctprc)
+			InstallDir := ""
+			if runtime.GOOS == "windows" {
+				InstallDir = handleDir(ctprc.InstallLocation.Windows)
+			} else {
+				InstallDir = handleDir(ctprc.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
+			}
+			_, err = os.Stat(InstallDir)
 
 			if err != nil {
-				fmt.Printf("%s was not detected. %s\n", ctprc.InstallLocation, err)
+				fmt.Printf("%s was not detected. %s\n", InstallDir, err)
 			} else {
-				fmt.Printf("%s path found at %s", ctprc.AppName, ctprc.InstallLocation)
+				fmt.Printf("%s path found at %s", ctprc.AppName, InstallDir)
 
 				programs = append(programs, ctprc)
-				programsLocations = append(programsLocations, ctprc.InstallLocation)
+				programsLocations = append(programsLocations, InstallDir)
 				programsURLs = append(programsURLs, success[i])
 
 				for i := 0; i < len(programs); i++ {
@@ -106,9 +114,16 @@ func createStagingDir(repo string) {
 	}
 }
 
+func handleDir(dir string) string {
+	usr, _ := user.Current()
+	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
+	appdata, _ := os.UserConfigDir()
+	dir = strings.Replace(dir, "%appdata%", appdata, -1)
+	return dir
+}
+
 func cloneRepo(repo string) {
-	dir, _ := os.Getwd()
-	stagePath := path.Join(dir, "stage", repo)
+	stagePath := path.Join(shareDir(), repo)
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL:      "https://github.com/catppuccin/" + repo + ".git",
 		Progress: os.Stdout,
@@ -116,4 +131,22 @@ func cloneRepo(repo string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func shareDir() string {
+	if utils.IsWindows() {
+		return path.Join(UserHomeDir(), "AppData/LocalLow/uwu")
+	}
+	return path.Join(utils.GetEnv("XDG_DATA_HOME", handleDir("~/.local/")), "share/uwu")
+}
+
+func UserHomeDir() string {
+    if runtime.GOOS == "windows" {
+        home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+        if home == "" {
+            home = os.Getenv("USERPROFILE")
+        }
+        return home
+    }
+    return os.Getenv("HOME")
 }
