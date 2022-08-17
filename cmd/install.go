@@ -3,7 +3,9 @@ package cmd
 import (
 	"catppuccin/uwu/internal/pkg/structs"
 	"fmt"
+	"path"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -103,17 +105,14 @@ func installer(packages []string) {
 }
 
 func createStagingDir(repo string) error {
-	_, err := os.Stat("stage")
-	if os.IsNotExist(err) {
-		os.Mkdir("stage", 0755)
-	}
-	_, err = os.Stat(fmt.Sprintf("stage/%s", repo))
-	if os.IsNotExist(err) {
-		os.Mkdir(fmt.Sprintf("stage/%s", repo), 0755)
-		return nil
-	} else {
+	err := os.MkdirAll(path.Join("stage", repo), 0755)
+	if err != nil && !os.IsExist(err) {
+		log.Fatal(err)
+	} else if err != nil {
 		return err
-	}	
+	}
+	// hey spoopy :)
+	return nil
 }
 
 func handleDir(fileLoc string, dir string) string {
