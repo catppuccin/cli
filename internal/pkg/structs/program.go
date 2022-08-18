@@ -18,7 +18,6 @@ type Program struct {
 	AppName         string          `yaml:"app_name"`
 	PathName        string          `yaml:"path_name"`
 	InstallLocation InstallLocation `yaml:"install_location"`
-	InstallFiles    []string        `yaml:"install_files"`
 	InstallFlavours InstallFlavours `yaml:"install_flavours"`
 	OneFlavour      bool            `yaml:"one_flavour"`
 	Modes           []string        `yaml:"modes"`
@@ -29,13 +28,19 @@ type InstallLocation struct {
 	Windows string `yaml:"windows"`
 }
 
-type Entry interface {}
+type Additional interface {}
+
+type Entry struct {
+	Default    []string     `yaml:"default"`
+	Additional Additional `yaml:"additional"` 
+}
 
 type InstallFlavours struct {
-	Latte     []Entry `yaml:"latte"`
-	Frappe    []Entry `yaml:"frappe"`
-	Macchiato []Entry `yaml:"macchiato"`
-	Mocha     []Entry `yaml:"mocha"`
+	All       Entry `yaml:"all"`
+	Latte     Entry `yaml:"latte"`
+	Frappe    Entry `yaml:"frappe"`
+	Macchiato Entry `yaml:"macchiato"`
+	Mocha     Entry `yaml:"mocha"`
 	To        string  `yaml:"to"`
 }
 

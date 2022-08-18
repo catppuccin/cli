@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 	"path"
 	"runtime"
 	"github.com/go-git/go-git/v5"
@@ -29,6 +30,9 @@ var installCmd = &cobra.Command{
 }
 
 func installer(packages []string) {
+	// Hard-coded variables, will add functionality to change these via flags
+	//mode := "default"
+	flavour := "all"
 	fmt.Println("Installing packages...")
 	for i := 0; i < len(packages); i++ {
 		fmt.Printf(packages[i])
@@ -74,7 +78,7 @@ func installer(packages []string) {
 		} else {
 			ctprc, err := structs.UnmarshalProgram(body)
 			if err != nil {
-				fmt.Println(".ctprc couldn't be unmarshaled correctly. Some data may be corrupted.")
+				fmt.Printf(".ctprc couldn't be unmarshaled correctly. Some data may be corrupted. (%s)\n", err)
 			}
 			fmt.Println(ctprc)
 			InstallDir := ""
@@ -94,23 +98,27 @@ func installer(packages []string) {
 				programsLocations = append(programsLocations, InstallDir)
 				programsURLs = append(programsURLs, success[i])
 
-				for i := 0; i < len(programs); i++ {
-					createStagingDir(programs[i].PathName)
-					
-					fmt.Println("\nCloning " + programs[i].AppName + "...")
-
-					cloneRepo(programs[i].AppName)
-				}
 			}
 		}
 	}
-}
-
-func createStagingDir(repo string) {
-	err := os.MkdirAll(path.Join("stage/", repo), 0755)
-	if err != nil && !os.IsExist(err) {
-		fmt.Println("Failed to create staging directory")
-		os.Exit(1)
+	for i := 0; i < len(programs); i++ {
+		fmt.Println("\nCloning " + programs[i].AppName + "...")
+		baseDir := cloneRepo(programs[i].AppName)
+		ctprc := programs[i]
+		// Symlink the repo
+		switch flavour {
+			// TO-DO: Implement modes
+		case "all":
+		makeLinks(baseDir, ctprc.InstallFlavours.All.Default, ctprc.InstallFlavours.To, programsLocations[i]) // The magic line
+		case "latte":
+		makeLinks(baseDir, ctprc.InstallFlavours.Latte.Default, ctprc.InstallFlavours.To, programsLocations[i])
+		case "frappe":
+		makeLinks(baseDir, ctprc.InstallFlavours.Frappe.Default, ctprc.InstallFlavours.To, programsLocations[i])
+		case "macchiato":
+		makeLinks(baseDir, ctprc.InstallFlavours.Macchiato.Default, ctprc.InstallFlavours.To, programsLocations[i])
+		case "mocha":
+		makeLinks(baseDir, ctprc.InstallFlavours.Mocha.Default, ctprc.InstallFlavours.To, programsLocations[i])
+		}
 	}
 }
 
@@ -122,7 +130,58 @@ func handleDir(dir string) string {
 	return dir
 }
 
-func cloneRepo(repo string) {
+func makeLinks(baseDir string, links []string, to string, finalDir string) {
+	/* An explanation of these ambigious names
+	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
+	 * links    - a list of files that we loop through to make links of
+	 * to       - the location these were meant to be linked to, not including the actual path
+	 * finalDir - the actual path they are going to
+	 */
+	fmt.Println("Making symlinks....")
+	// Regex last-item match
+	re, _ := regexp.Compile(`\/[^\/]*$`)
+	// Iterate over links and use makeLink to make the links
+	for i := 0; i < len(links); i++ {
+		link := path.Join(baseDir, links[i])
+		// Use the regex to get the last part of the file URL and append it to the `to`
+		fmt.Println(to)
+		shortPath := re.FindString(link)
+		name := to
+		if strings.Contains(shortPath[2:], ".") {
+			name = path.Join(to, shortPath)
+		}
+		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
+		// Use the name as name, the link as the from, and the finalDir as the to
+		makeLink(link, finalDir, name)
+	}
+}
+
+func makeLink(from string, to string, name string) {
+	if to[len(to)-1:] != "/" {
+		fmt.Println("'to' is not a directory wtf")
+	} else {
+		// Symlink the directory
+		err := os.Symlink(from, path.Join(to, name))   /* Example:
+																						 * (Folder)
+																						 * Symlink themes/default into ~/.config/helix/themes
+																						 * from: ~/.local/share/uwu/Helix/themes/default
+																						 * to:   ~/.config/helix/
+																						 * name: themes/
+																						 * Creates a symlink from ~/.local/share/uwu/Helix/themes to ~/.config/helix/themes
+																						 * (File)
+																						 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
+																						 * from: ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml
+																						 * to:   ~/.config/helix/
+																						 * name: themes/catppuccin_mocha.toml 
+																						 * Creates a symlink from ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
+																						 */
+		if err != nil {
+			fmt.Println(err)
+		}	
+	}
+}
+
+func cloneRepo(repo string) string {
 	stagePath := path.Join(shareDir(), repo)
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL:      "https://github.com/catppuccin/" + repo + ".git",
@@ -131,6 +190,7 @@ func cloneRepo(repo string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	return stagePath
 }
 
 func shareDir() string {
