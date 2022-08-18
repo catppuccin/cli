@@ -1,6 +1,2 @@
 # Build files
-uwu*
-
-dist/
-stage/*
-uwu.exe
+.idea/

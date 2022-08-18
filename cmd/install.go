@@ -1,20 +1,22 @@
 package cmd
 
 import (
+	"catppuccin/uwu/internal/pkg/structs"
+	"catppuccin/uwu/internal/utils"
 	"fmt"
-	"time"
 	"regexp"
 	"path"
 	"runtime"
 	"github.com/go-git/go-git/v5"
+	"github.com/spf13/cobra"
 	"io"
 	"net/http"
-	"catppuccin/uwu/internal/utils"
 	"os"
 	"os/user"
+	"path"
+	"regexp"
+	"runtime"
 	"strings"
-	"catppuccin/uwu/internal/pkg/structs"
-	"github.com/spf13/cobra"
 )
 
 var Flavour string
@@ -112,15 +114,15 @@ func installer(packages []string) {
 		switch Flavour {
 			// TO-DO: Implement modes
 		case "all":
-		makeLinks(baseDir, ctprc.InstallFlavours.All.Default, ctprc.InstallFlavours.To, programsLocations[i]) // The magic line
+			makeLinks(baseDir, ctprc.InstallFlavours.All.Default, ctprc.InstallFlavours.To, programsLocations[i]) // The magic line
 		case "latte":
-		makeLinks(baseDir, ctprc.InstallFlavours.Latte.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.InstallFlavours.Latte.Default, ctprc.InstallFlavours.To, programsLocations[i])
 		case "frappe":
-		makeLinks(baseDir, ctprc.InstallFlavours.Frappe.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.InstallFlavours.Frappe.Default, ctprc.InstallFlavours.To, programsLocations[i])
 		case "macchiato":
-		makeLinks(baseDir, ctprc.InstallFlavours.Macchiato.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.InstallFlavours.Macchiato.Default, ctprc.InstallFlavours.To, programsLocations[i])
 		case "mocha":
-		makeLinks(baseDir, ctprc.InstallFlavours.Mocha.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.InstallFlavours.Mocha.Default, ctprc.InstallFlavours.To, programsLocations[i])
 		}
 	}
 }
@@ -134,7 +136,7 @@ func handleDir(dir string) string {
 }
 
 func makeLinks(baseDir string, links []string, to string, finalDir string) {
-	/* An explanation of these ambigious names
+	/* An explanation of these ambiguous names
 	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
 	 * links    - a list of files that we loop through to make links of
 	 * to       - the location these were meant to be linked to, not including the actual path
@@ -203,23 +205,23 @@ func makeLink(from string, to string, name string) {
 		fmt.Println("'to' is not a directory wtf")
 	} else {
 		// Symlink the directory
-		err := os.Symlink(from, path.Join(to, name))   /* Example:
-																						 * (Folder)
-																						 * Symlink themes/default into ~/.config/helix/themes
-																						 * from: ~/.local/share/uwu/Helix/themes/default
-																						 * to:   ~/.config/helix/
-																						 * name: themes/
-																						 * Creates a symlink from ~/.local/share/uwu/Helix/themes to ~/.config/helix/themes
-																						 * (File)
-																						 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-																						 * from: ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml
-																						 * to:   ~/.config/helix/
-																						 * name: themes/catppuccin_mocha.toml 
-																						 * Creates a symlink from ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-																						 */
+		err := os.Symlink(from, path.Join(to, name)) /* Example:
+		 * (Folder)
+		 * Symlink themes/default into ~/.config/helix/themes
+		 * from: ~/.local/share/uwu/Helix/themes/default
+		 * to:   ~/.config/helix/
+		 * name: themes/
+		 * Creates a symlink from ~/.local/share/uwu/Helix/themes to ~/.config/helix/themes
+		 * (File)
+		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
+		 * from: ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml
+		 * to:   ~/.config/helix/
+		 * name: themes/catppuccin_mocha.toml
+		 * Creates a symlink from ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
+		 */
 		if err != nil {
 			fmt.Println(err)
-		}	
+		}
 	}
 }
 
@@ -243,12 +245,37 @@ func shareDir() string {
 }
 
 func UserHomeDir() string {
-    if runtime.GOOS == "windows" {
-        home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-        if home == "" {
-            home = os.Getenv("USERPROFILE")
-        }
-        return home
-    }
-    return os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }
+
+//func removeInstalled(packages []string) {
+//	fmt.Println("Detecting installed packages...")
+//	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
+//	for i := 0; i < len(packages); i++ {
+//		var success []string
+//		for i := 0; i < len(packages); i++ {
+//			repo := packages[i]
+//			// Attempt to get the .catppuccinrc
+//			rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.ctprc", org, repo)
+//			res, err := http.Get(rc)
+//			if err != nil {
+//				fmt.Println("\nCould not make GET request")
+//				os.Exit(1)
+//			}
+//			if res.StatusCode != 200 {
+//				fmt.Printf("%s does not have a .ctprc", repo)
+//				continue
+//			} else {
+//				success = append(success, string(repo))
+//			}
+//		}
+//	}
+//
+//}
