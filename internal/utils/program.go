@@ -15,3 +15,11 @@ func GetEnv(lookup string, fallback string) string {
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
+
+func PathExists(path string) bool {
+	_, exists := os.Stat(path)
+	if os.IsNotExist(exists) {
+		return false
+	}
+	return true
+}
