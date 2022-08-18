@@ -11,9 +11,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "uwu",
+	Use:   "ctp",
 	Short: "Catppuccin theme installer.",
-	Long: `uwu is a theme installer for catppuccin. 
+	Long: `ctp is a theme installer for catppuccin. 
 	It allows you to easily and seamlessly install any of the 100+ Catppuccin themes straight from the command line.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

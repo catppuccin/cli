@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"catppuccin/uwu/internal/pkg/structs"
-	"catppuccin/uwu/internal/utils"
 	"fmt"
-	"regexp"
-	"path"
-	"runtime"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"io"
@@ -17,6 +14,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var Flavour string
@@ -112,7 +110,7 @@ func installer(packages []string) {
 		ctprc := programs[i]
 		// Symlink the repo
 		switch Flavour {
-			// TO-DO: Implement modes
+		// TO-DO: Implement modes
 		case "all":
 			makeLinks(baseDir, ctprc.InstallFlavours.All.Default, ctprc.InstallFlavours.To, programsLocations[i]) // The magic line
 		case "latte":
@@ -185,7 +183,6 @@ func handleDirPath(finalDir string, name string) {
 	}
 }
 
-
 func handleFilePath(finalDir string, name string) {
 	// Check if dir to link already exists
 	fileFolder, _ := path.Split(name)
@@ -198,8 +195,6 @@ func handleFilePath(finalDir string, name string) {
 	}
 }
 
-
-
 func makeLink(from string, to string, name string) {
 	if to[len(to)-1:] != "/" {
 		fmt.Println("'to' is not a directory wtf")
@@ -208,16 +203,16 @@ func makeLink(from string, to string, name string) {
 		err := os.Symlink(from, path.Join(to, name)) /* Example:
 		 * (Folder)
 		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/uwu/Helix/themes/default
+		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default
 		 * to:   ~/.config/helix/
 		 * name: themes/
-		 * Creates a symlink from ~/.local/share/uwu/Helix/themes to ~/.config/helix/themes
+		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
 		 * (File)
 		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-		 * from: ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml
+		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
 		 * to:   ~/.config/helix/
 		 * name: themes/catppuccin_mocha.toml
-		 * Creates a symlink from ~/.local/share/uwu/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
+		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
 		 */
 		if err != nil {
 			fmt.Println(err)
@@ -239,9 +234,9 @@ func cloneRepo(repo string) string {
 
 func shareDir() string {
 	if utils.IsWindows() {
-		return path.Join(UserHomeDir(), "AppData/LocalLow/uwu")
+		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
 	}
-	return path.Join(utils.GetEnv("XDG_DATA_HOME", handleDir("~/.local/")), "share/uwu")
+	return path.Join(utils.GetEnv("XDG_DATA_HOME", handleDir("~/.local/")), "share/catppuccin-cli")
 }
 
 func UserHomeDir() string {

@@ -1,8 +1,7 @@
 package main
 
-import "catppuccin/uwu/cmd"
+import "github.com/catppuccin/cli/cmd"
 
 func main() {
 	cmd.Execute()
-
 }

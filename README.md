@@ -1,27 +1,14 @@
-# uwu
-uwu
+# Catppuccin CLI (WIP)
 
-This is a placeholder README. I'll update it once we move it into the org.
+A work-in-progress CLI for Catppuccin themes.
 
-## uwu
-An experimental "package manager" for Catppuccin themes. A theme manager!
 It allows you to:
 - Install themes with one command
 - Uninstall themes with one command
 - Update themes with one command
 
-## uwu
-That's right. A roadmap:
-- clone and stage repo
-- symlink all flavours (in progress)
-- symlink specific flavours
-- updating themes
-- repo searching through `bubbletea`
-- uninstalling themes
-- strategies (advanced installation)
-
-### uwu
-In other words, the `.ctprc` spec. Trust me, I'll write a comprehensive explanation tomorrow.
+### `.ctprc`
+The current `.ctprc` spec, which is intended to be kept inside each Catppuccin repo moving forward.
 ```yaml
 app_name: # the app name
 path_name: # the name by which you invoke this program from the command line
