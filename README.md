@@ -1,5 +1,21 @@
-# Catppuccin CLI (WIP)
+<h3 align="center">
+	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/logos/exports/1544x1544_circle.png" width="100" alt="Logo"/><br/>
+	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/transparent.png" height="30" width="0px"/>
+	Catppuccin CLI
+	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/transparent.png" height="30" width="0px"/>
+</h3>
 
+<p align="center">
+	<a href="https://github.com/catppuccin/cli/stargazers"><img src="https://img.shields.io/github/stars/catppuccin/cli?colorA=363a4f&colorB=b7bdf8&style=for-the-badge"></a>
+	<a href="https://github.com/catppuccin/cli/issues"><img src="https://img.shields.io/github/issues/catppuccin/cli?colorA=363a4f&colorB=f5a97f&style=for-the-badge"></a>
+	<a href="https://github.com/catppuccin/cli/contributors"><img src="https://img.shields.io/github/contributors/catppuccin/cli?colorA=363a4f&colorB=a6da95&style=for-the-badge"></a>
+</p>
+
+<p align="center">
+	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/sample.png"/>
+</p>
+
+## Catppuccin CLI
 A work-in-progress CLI for Catppuccin themes.
 
 It allows you to:
@@ -7,25 +23,16 @@ It allows you to:
 - Uninstall themes with one command
 - Update themes with one command
 
-### `.ctprc`
-The current `.ctprc` spec, which is intended to be kept inside each Catppuccin repo moving forward.
-```yaml
-app_name: # the app name
-path_name: # the name by which you invoke this program from the command line
-install_location:
-  unix: # for unix systems, where the configs are installed
-  windows: # same thing for windows
-install_flavours:
-  all: #instructions to install all flavours(if possible)
-    default:                   # the default mode, because themes can have "variants"
-      - themes/catppuccin.toml # files to install
-    additional: # optional additional variants
-      no-italics: # an example variant
-        - themes/catppuccin-no-italics.toml # files to install
-  # same thing for latte, frappe, blah blah blah
-  to: themes/ # where to install the files/directories to
-one_flavour: false # if you can only install one flavour at a time
-modes:
-  - no-italics # the modes you specified in install flavours
-```
-That was lazy. I'll make a full spec tomorrow, like I said. If ya want a good(and updated) example, check out [my helix .ctprc](https://github.com/catppuccin/helix-new/blob/main/.ctprc).
+&nbsp;
+
+<p align="center">
+	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/footers/gray0_ctp_on_line.svg?sanitize=true" />
+</p>
+
+<p align="center">
+	Copyright &copy; 2021-present <a href="https://github.com/catppuccin" target="_blank">Catppuccin Org</a>
+</p>
+
+<p align="center">
+	<a href="https://github.com/catppuccin/catppuccin/blob/main/LICENSE"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=MIT&logoColor=d9e0ee&colorA=363a4f&colorB=b7bdf8"/></a>
+</p>
