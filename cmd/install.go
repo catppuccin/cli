@@ -85,13 +85,13 @@ func installer(packages []string) {
 			if err != nil {
 				fmt.Printf(".catppuccin.yaml couldn't be unmarshaled correctly. Some data may be corrupted. (%s)\n", err)
 			}
-			fmt.Println(ctprc.Properties.AppName)
+			fmt.Println(ctprc.AppName)
 			InstallDir := ""
 			if runtime.GOOS == "windows" {
-				InstallDir = handleDir(ctprc.Properties.InstallLocation.Windows)
+				InstallDir = handleDir(ctprc.InstallLocation.Windows)
 				fmt.Printf(InstallDir)
 			} else {
-				InstallDir = handleDir(ctprc.Properties.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
+				InstallDir = handleDir(ctprc.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
 				fmt.Printf(InstallDir)
 			}
 			_, err = os.Stat(InstallDir)
@@ -99,7 +99,7 @@ func installer(packages []string) {
 			if err != nil {
 				fmt.Printf("%s was not detected. %s\n", InstallDir, err)
 			} else {
-				fmt.Printf("%s path found at %s", ctprc.Properties.AppName, InstallDir)
+				fmt.Printf("%s path found at %s", ctprc.AppName, InstallDir)
 
 				programs = append(programs, ctprc)
 				programsLocations = append(programsLocations, InstallDir)
@@ -109,8 +109,8 @@ func installer(packages []string) {
 		}
 	}
 	for i := 0; i < len(programs); i++ {
-		fmt.Println("\nCloning " + programs[i].Properties.AppName + "...")
-		baseDir := cloneRepo(programs[i].Properties.AppName)
+		fmt.Println("\nCloning " + programs[i].AppName + "...")
+		baseDir := cloneRepo(programs[i].AppName)
 		ctprc := programs[i]
 		//Symlink the repo
 		switch Flavour {

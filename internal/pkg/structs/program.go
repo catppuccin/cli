@@ -15,17 +15,12 @@ func (r *Program) Marshal() ([]byte, error) {
 }
 
 type Program struct {
-	Properties   Properties   `yaml:"properties"`
-	Installation Installation `yaml:"installation"`
-	OneFlavour   bool         `yaml:"one_flavour"`
-	Modes        []string     `yaml:"modes"`
-}
-
-type Properties struct {
 	AppName         string          `yaml:"app_name"`
 	BinaryName      string          `yaml:"binary_name"`
 	InstallLocation InstallLocation `yaml:"install_location"`
+	Installation Installation       `yaml:"installation"`
 }
+
 
 type InstallLocation struct {
 	Unix    string `yaml:"unix"`
@@ -50,4 +45,6 @@ type InstallFlavours struct {
 type Installation struct {
 	InstallFlavours InstallFlavours `yaml:"flavours"`
 	To              string          `yaml:"to"`
+	OneFlavour   bool         `yaml:"one_flavour"`
+	Modes        []string     `yaml:"modes"`
 }
