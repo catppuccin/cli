@@ -88,10 +88,13 @@ func installer(packages []string) {
 			fmt.Println(ctprc.AppName)
 			InstallDir := ""
 			if runtime.GOOS == "windows" {
-				InstallDir = handleDir(ctprc.InstallLocation.Windows)
+				InstallDir = handleDir(ctprc.Installation.InstallLocation.Windows)
+				fmt.Printf(InstallDir)
+			} else if runtime.GOOS == "linux" {
+				InstallDir = handleDir(ctprc.Installation.InstallLocation.Linux)
 				fmt.Printf(InstallDir)
 			} else {
-				InstallDir = handleDir(ctprc.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
+				InstallDir = handleDir(ctprc.Installation.InstallLocation.Macos) // Just make the naive assumption that if it's not Windows or Linux, it's MacOS.
 				fmt.Printf(InstallDir)
 			}
 			_, err = os.Stat(InstallDir)
