@@ -2,10 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/go-git/go-git/v5"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
@@ -15,6 +11,11 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/go-git/go-git/v5"
+	"github.com/spf13/cobra"
 )
 
 var Flavour string
@@ -38,7 +39,7 @@ func installer(packages []string) {
 	//mode := "default"
 	fmt.Println("Installing packages...")
 	for i := 0; i < len(packages); i++ {
-		fmt.Printf(packages[i])
+		fmt.Println(packages[i])
 	}
 	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
 	//fmt.Println("\nGenerating chezmoi config...")
