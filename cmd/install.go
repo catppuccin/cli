@@ -41,19 +41,20 @@ func installer(packages []string) {
 		fmt.Printf(packages[i])
 	}
 	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
-	fmt.Println("\nGenerating chezmoi config...")
+	//fmt.Println("\nGenerating chezmoi config...")
 	var success []string
 	for i := 0; i < len(packages); i++ {
 		repo := packages[i]
-		// Attempt to get the .catppuccinrc
-		rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.ctprc", org, repo)
+		// Attempt to get the .catppuccin.yaml
+		rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.catppuccin.yaml", org, repo)
+		fmt.Printf(rc)
 		res, err := http.Get(rc)
 		if err != nil {
 			fmt.Println("\nCould not make GET request")
 			os.Exit(1)
 		}
 		if res.StatusCode != 200 {
-			fmt.Printf("%s does not have a .ctprc", repo)
+			fmt.Printf("\n%s does not have a .catppuccin.yaml", repo)
 			continue
 		} else {
 			success = append(success, string(repo))
@@ -66,7 +67,7 @@ func installer(packages []string) {
 	programsURLs := []string{}
 
 	for i := 0; i < len(success); i++ {
-		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.ctprc"
+		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.catppuccin.yaml"
 		res, err := http.Get(rc)
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
@@ -81,21 +82,23 @@ func installer(packages []string) {
 		} else {
 			ctprc, err := structs.UnmarshalProgram(body)
 			if err != nil {
-				fmt.Printf(".ctprc couldn't be unmarshaled correctly. Some data may be corrupted. (%s)\n", err)
+				fmt.Printf(".catppuccin.yaml couldn't be unmarshaled correctly. Some data may be corrupted. (%s)\n", err)
 			}
-			fmt.Println(ctprc)
+			fmt.Println(ctprc.Properties.AppName)
 			InstallDir := ""
 			if runtime.GOOS == "windows" {
-				InstallDir = handleDir(ctprc.InstallLocation.Windows)
+				InstallDir = handleDir(ctprc.Properties.InstallLocation.Windows)
+				fmt.Printf(InstallDir)
 			} else {
-				InstallDir = handleDir(ctprc.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
+				InstallDir = handleDir(ctprc.Properties.InstallLocation.Unix) // Just make the naive assumption that if it's not Windows, it's Unix.
+				fmt.Printf(InstallDir)
 			}
 			_, err = os.Stat(InstallDir)
 
 			if err != nil {
 				fmt.Printf("%s was not detected. %s\n", InstallDir, err)
 			} else {
-				fmt.Printf("%s path found at %s", ctprc.AppName, InstallDir)
+				fmt.Printf("%s path found at %s", ctprc.Properties.AppName, InstallDir)
 
 				programs = append(programs, ctprc)
 				programsLocations = append(programsLocations, InstallDir)
@@ -105,32 +108,63 @@ func installer(packages []string) {
 		}
 	}
 	for i := 0; i < len(programs); i++ {
-		fmt.Println("\nCloning " + programs[i].AppName + "...")
-		baseDir := cloneRepo(programs[i].AppName)
+		fmt.Println("\nCloning " + programs[i].Properties.AppName + "...")
+		baseDir := cloneRepo(programs[i].Properties.AppName)
 		ctprc := programs[i]
-		// Symlink the repo
+		//Symlink the repo
 		switch Flavour {
 		// TO-DO: Implement modes
 		case "all":
-			makeLinks(baseDir, ctprc.InstallFlavours.All.Default, ctprc.InstallFlavours.To, programsLocations[i]) // The magic line
+			makeLinks(baseDir, ctprc.Installation.InstallFlavours.All.Default, ctprc.Installation.To, programsLocations[i]) // The magic line
 		case "latte":
-			makeLinks(baseDir, ctprc.InstallFlavours.Latte.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Latte.Default, ctprc.Installation.To, programsLocations[i])
 		case "frappe":
-			makeLinks(baseDir, ctprc.InstallFlavours.Frappe.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe.Default, ctprc.Installation.To, programsLocations[i])
 		case "macchiato":
-			makeLinks(baseDir, ctprc.InstallFlavours.Macchiato.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato.Default, ctprc.Installation.To, programsLocations[i])
 		case "mocha":
-			makeLinks(baseDir, ctprc.InstallFlavours.Mocha.Default, ctprc.InstallFlavours.To, programsLocations[i])
+			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha.Default, ctprc.Installation.To, programsLocations[i])
 		}
 	}
 }
 
 func handleDir(dir string) string {
 	usr, _ := user.Current()
+	if strings.Contains(dir, "%userprofile%") { // For programs which store config on per-user basis like vscode
+		dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
+		fmt.Printf(dir)
+	}
+	dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
 	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
 	appdata, _ := os.UserConfigDir()
 	dir = strings.Replace(dir, "%appdata%", appdata, -1)
 	return dir
+
+}
+
+func makeLink(from string, to string, name string) {
+	if to[len(to)-1:] != "/" {
+		fmt.Println("'to' is not a directory wtf")
+	} else {
+		// Symlink the directory
+		err := os.Symlink(from, path.Join(to, name)) /* Example:
+		 * (Folder)
+		 * Symlink themes/default into ~/.config/helix/themes
+		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default
+		 * to:   ~/.config/helix/
+		 * name: themes/
+		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
+		 * (File)
+		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
+		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
+		 * to:   ~/.config/helix/
+		 * name: themes/catppuccin_mocha.toml
+		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
+		 */
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 func makeLinks(baseDir string, links []string, to string, finalDir string) {
@@ -147,7 +181,6 @@ func makeLinks(baseDir string, links []string, to string, finalDir string) {
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
 		// Use the regex to get the last part of the file URL and append it to the `to`
-		fmt.Println(to)
 		shortPath := re.FindString(link)
 		name := to
 		if strings.Contains(shortPath[2:], ".") {
@@ -195,35 +228,10 @@ func handleFilePath(finalDir string, name string) {
 	}
 }
 
-func makeLink(from string, to string, name string) {
-	if to[len(to)-1:] != "/" {
-		fmt.Println("'to' is not a directory wtf")
-	} else {
-		// Symlink the directory
-		err := os.Symlink(from, path.Join(to, name)) /* Example:
-		 * (Folder)
-		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default
-		 * to:   ~/.config/helix/
-		 * name: themes/
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
-		 * (File)
-		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
-		 * to:   ~/.config/helix/
-		 * name: themes/catppuccin_mocha.toml
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-}
-
 func cloneRepo(repo string) string {
 	stagePath := path.Join(shareDir(), repo)
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-		URL:      "https://github.com/catppuccin/" + repo + ".git",
+		URL:      "https://github.com/catppuccin-rfc/" + repo + ".git",
 		Progress: os.Stdout,
 	})
 	if err != nil {
@@ -249,28 +257,3 @@ func UserHomeDir() string {
 	}
 	return os.Getenv("HOME")
 }
-
-//func removeInstalled(packages []string) {
-//	fmt.Println("Detecting installed packages...")
-//	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
-//	for i := 0; i < len(packages); i++ {
-//		var success []string
-//		for i := 0; i < len(packages); i++ {
-//			repo := packages[i]
-//			// Attempt to get the .catppuccinrc
-//			rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.ctprc", org, repo)
-//			res, err := http.Get(rc)
-//			if err != nil {
-//				fmt.Println("\nCould not make GET request")
-//				os.Exit(1)
-//			}
-//			if res.StatusCode != 200 {
-//				fmt.Printf("%s does not have a .ctprc", repo)
-//				continue
-//			} else {
-//				success = append(success, string(repo))
-//			}
-//		}
-//	}
-//
-//}
