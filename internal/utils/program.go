@@ -13,6 +13,8 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+// GetEnv gets an environment variable.
+// If not defined, it gets the fallback.
 func GetEnv(lookup string, fallback string) string {
 	if res, ok := os.LookupEnv(lookup); ok {
 		return res
@@ -20,10 +22,12 @@ func GetEnv(lookup string, fallback string) string {
 	return fallback
 }
 
+// IsWindows checks if OS is Windows
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
 
+// PathExists checks if a path exists
 func PathExists(path string) bool {
 	_, exists := os.Stat(path)
 	if os.IsNotExist(exists) {
@@ -32,6 +36,7 @@ func PathExists(path string) bool {
 	return true
 }
 
+// ShareDir generates the share directory for the cli.
 func ShareDir() string {
 	if IsWindows() {
 		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
@@ -39,6 +44,7 @@ func ShareDir() string {
 	return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "share/catppuccin-cli")
 }
 
+// UserHomeDir gets the user's home directory
 func UserHomeDir() string {
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
@@ -50,6 +56,7 @@ func UserHomeDir() string {
 	return os.Getenv("HOME")
 }
 
+// HandleDir handles a directory, replacing certain parts with known attributes.
 func HandleDir(dir string) string {
 	usr, _ := user.Current()
 	if strings.Contains(dir, "%userprofile%") { // For programs which store config on per-user basis like vscode
@@ -64,6 +71,7 @@ func HandleDir(dir string) string {
 
 }
 
+// MakeLink makes a symlink from a path to another path with a suffix.
 func makeLink(from string, to string, name string) {
 	if to[len(to)-1:] != "/" {
 		fmt.Println("'to' is not a directory wtf")
@@ -89,6 +97,7 @@ func makeLink(from string, to string, name string) {
 	}
 }
 
+// MakeLinks loops through a list and converts it's attributes into arguments for MakeLink.
 func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	/* An explanation of these ambiguous names
 	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
@@ -118,6 +127,7 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	}
 }
 
+// HandleDirPath is a function to handle a directory when making a symlink
 func HandleDirPath(finalDir string, name string) {
 	// Check if dir to link already exists
 	fullDir := path.Join(finalDir, name)
@@ -138,6 +148,7 @@ func HandleDirPath(finalDir string, name string) {
 	}
 }
 
+// HandleFilePath handles files that are made with symlinks
 func HandleFilePath(finalDir string, name string) {
 	// Check if dir to link already exists
 	fileFolder, _ := path.Split(name)
@@ -150,10 +161,11 @@ func HandleFilePath(finalDir string, name string) {
 	}
 }
 
+// CloneRepo clones a repo into the specified location.
 func CloneRepo(repo string) string {
 	stagePath := path.Join(ShareDir(), repo)
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-		URL:      "https://github.com/catppuccin-rfc/" + repo + ".git",
+		URL:      "https://github.com/" + GetEnv("ORG_OVERRIDE", "catppuccin") +  repo + ".git",
 		Progress: os.Stdout,
 	})
 	if err != nil {
