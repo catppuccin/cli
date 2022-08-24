@@ -5,7 +5,6 @@ import (
 	"path"
 
 	"github.com/catppuccin/cli/internal/utils"
-	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )
 
