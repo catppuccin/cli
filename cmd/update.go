@@ -32,28 +32,8 @@ func updater(packages []string) {
 		if !utils.PathExists(repo_dir) {
 			fmt.Printf("Cannot find installed %s.\n", repo)
 		} else {
-			pullUpdates(repo_dir)
+			utils.PullUpdates(repo_dir)
 		}
 	}
 }
 
-func pullUpdates(repo string) {
-	// Repo should be a valid folder, so now we'll open the .git
-	r, err := git.PlainOpen(repo)	 // Open new repo targeting the .git folder
-	if err != nil {
-		fmt.Printf("Error opening repo folder: %s\n", err)
-	} else {
-		// Get working directory
-		w, err := r.Worktree()
-		if err != nil {
-			fmt.Printf("Error getting working directory: %s\n", err)
-		} else {
-			// Pull the latest changes from origin
-			fmt.Printf("Pulling latest changes for %s...\n", repo)
-			err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-			if err != nil {
-				fmt.Printf("Failed to pull updates: %s\n", err)
-			}
-		}
-	}
-}
