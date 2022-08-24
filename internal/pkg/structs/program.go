@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"encoding/json"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,12 +15,23 @@ func (r *Program) Marshal() ([]byte, error) {
 	return yaml.Marshal(r)
 }
 
-type Program struct {
-	AppName         string          `yaml:"app_name"`
-	BinaryName      string          `yaml:"binary_name"`
-	Installation Installation       `yaml:"installation"`
+func UnmarshalSearch(data []byte) (SearchRes, error) {
+	var s SearchRes
+	//s := SearchRes{}
+	err := json.Unmarshal(data, &s)
+	return s, err
 }
 
+type SearchRes struct {
+	Name string `json:"name"`
+	Id   string `json:"id"`
+}
+
+type Program struct {
+	AppName      string       `yaml:"app_name"`
+	BinaryName   string       `yaml:"binary_name"`
+	Installation Installation `yaml:"installation"`
+}
 
 type InstallLocation struct {
 	Linux   string `yaml:"linux"`
@@ -46,6 +58,6 @@ type Installation struct {
 	InstallLocation InstallLocation `yaml:"location"`
 	InstallFlavours InstallFlavours `yaml:"flavours"`
 	To              string          `yaml:"to"`
-	OneFlavour   bool         `yaml:"one_flavour"`
-	Modes        []string     `yaml:"modes"`
+	OneFlavour      bool            `yaml:"one_flavour"`
+	Modes           []string        `yaml:"modes"`
 }

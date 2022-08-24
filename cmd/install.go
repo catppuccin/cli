@@ -19,10 +19,12 @@ import (
 )
 
 var Flavour string
+var Modes string
 
 func init() {
 	rootCmd.AddCommand(installCmd)
 	installCmd.Flags().StringVarP(&Flavour, "flavour", "f", "all", "Custom flavour")
+	installCmd.Flags().StringVarP(&Modes, "mode", "m", "default", "Custom mode")
 }
 
 var installCmd = &cobra.Command{
