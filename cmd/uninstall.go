@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/catppuccin/cli/internal/utils"
 	"os"
 	"path"
 )
@@ -25,10 +26,10 @@ func removeInstalled(packages []string) {
 	for i := 0; i < len(packages); i++ {
 		fmt.Printf("%s\n", packages[i])
 	}
-	stageDir := shareDir() // Get the staging directory
+	stageDir := utils.ShareDir() // Get the staging directory
 	for i := 0; i < len(packages); i++ {
 		dir := path.Join(stageDir, packages[i]) // Join staging directory and the package
-		finalDir := handleDir(dir)              // Handle "%APPDATA%" and "~"
+		finalDir := utils.HandleDir(dir)              // Handle "%APPDATA%" and "~"
 		_, err := os.Lstat(finalDir)            // Check if the directory exists
 		if err != nil {
 			if os.IsNotExist(err) {
