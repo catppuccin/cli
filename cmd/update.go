@@ -13,7 +13,6 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 }
 
-
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update packages.",
@@ -35,4 +34,3 @@ func updater(packages []string) {
 		}
 	}
 }
-
