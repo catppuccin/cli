@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v47 v47.0.0
+	github.com/lithammer/fuzzysearch v1.1.5
 	github.com/spf13/cobra v1.5.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -27,6 +28,8 @@ require (
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210326060303-6b1517762897 // indirect
-	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

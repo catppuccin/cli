@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 )
 
-func UnmarshalSearch(data []byte) (SearchEntry, error) {
-	var s SearchEntry
+func UnmarshalSearch(data []byte) (SearchRes, error) {
+	var s SearchRes
 	//s := SearchRes{}
 	err := json.Unmarshal(data, &s)
 	return s, err

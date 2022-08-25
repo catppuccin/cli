@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-// "github.com/catppuccin/cli/internal/pkg/structs"
+	// "github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +33,7 @@ func searchPackage(searchQuery []string) {
 		fmt.Printf("\n%s does not exist. Caching JSON...", dir)
 		utils.UpdateJSON()
 	}
-	_, err := os.ReadFile(dir)
+	body, err := os.ReadFile(dir)
 	if err != nil {
 		fmt.Println("Cannot open file. ")
 		os.Exit(1)
@@ -41,5 +42,13 @@ func searchPackage(searchQuery []string) {
 	//qc, err := structs.UnmarshalSearch(fileJSON)
 	//qc := structs.SearchRes{}
 	//var qc structs.SearchRes
-	utils.UpdateJSON()
+	for i := 0; i < len(searchQuery); i++ {
+		cache, err := structs.UnmarshalSearch(body)
+		if err != nil {
+			fmt.Printf("Error opening cache: %s", err)
+		} else {
+			result := utils.SearchRepos(cache, searchQuery[i])
+			fmt.Printf("Found repo: %s", result.Name)
+		}
+	}
 }

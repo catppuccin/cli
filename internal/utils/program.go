@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v47/github"
 )
@@ -246,4 +247,42 @@ func UpdateJSON() {
 			os.WriteFile(dir, body, 0644)
 		}
 	}
+}
+
+// CheckBetter checks if better is greater than check. If it is, it returns better, otherwise it returns check. It also returns a BoolAnd of checkbetter and if better > check.
+func CheckBetter(check int, better int, checkbetter bool) (int, bool) {
+	if better > check {
+		return better, BoolAnd(true, checkbetter)
+	}
+	return check, BoolAnd(false, checkbetter)
+}
+
+// BoolAnd uses booleans in an AND operator
+func BoolAnd(first bool, second bool) bool {
+	if first || second {
+		return true
+	}
+	return false
+}
+
+// SearchRepos searches through a SearchRes for the best match
+func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
+	var best structs.SearchEntry
+	bestScore := -1000
+	for i := 0;i < len(repos);i++ {
+		repo := repos[i]
+		better := false
+		rank := fuzzy.RankMatch(term, repo.Name)
+		bestScore, better = CheckBetter(bestScore, rank, better) // Sets the new best score and also tells if if new term is better
+		for e := 0; e < len(repo.Topics); e++ {
+			topic := repo.Topics[e]
+			rank = fuzzy.RankMatch(term, topic)
+			bestScore, better = CheckBetter(bestScore, rank, better) // Basically what this does is goes and tells us the best match of the topic, and sets that score in bestScore.
+																															 // If better is true, best becomes this repo. Just trust me on this. Just trust me on this.
+		}
+		if better {
+			best = repo
+		}
+	}
+	return best // Return the best match
 }
