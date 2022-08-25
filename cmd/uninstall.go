@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 	"os"
 	"path"
 )
@@ -26,22 +26,33 @@ func removeInstalled(packages []string) {
 	for i := 0; i < len(packages); i++ {
 		fmt.Printf("%s\n", packages[i])
 	}
-	stageDir := utils.ShareDir() // Get the staging directory
+	stageDir := utils.ShareDir()
 	for i := 0; i < len(packages); i++ {
-		dir := path.Join(stageDir, packages[i]) // Join staging directory and the package
-		finalDir := utils.HandleDir(dir)              // Handle "%APPDATA%" and "~"
-		_, err := os.Lstat(finalDir)            // Check if the directory exists
+		dir := path.Join(stageDir, packages[i])
+		finalDir := utils.HandleDir(dir)
+		fmt.Printf("finaldir: %s", finalDir)
+		_, err := os.Lstat(finalDir)
 		if err != nil {
-			if os.IsNotExist(err) {
-				fmt.Printf("%s does not exist", finalDir)
-				os.Exit(0)
-			}
-		} else {
-			fmt.Printf("Removing %s\n", finalDir)
-			err := os.RemoveAll(finalDir) // Remove the directory
-			if err != nil {
-				fmt.Printf("\nCould not remove %s", finalDir)
-			}
+			fmt.Println("somdthing")
 		}
+		//fmt.Printf("%s: ", status.Name())
+		//stageDir := utils.ShareDir() // Get the staging directory
+		//for i := 0; i < len(packages); i++ {
+		//	dir := path.Join(stageDir, packages[i]) // Join staging directory and the package
+		//	finalDir := utils.HandleDir(dir)              // Handle "%APPDATA%" and "~"
+		//	_, err := os.Lstat(finalDir)            // Check if the directory exists
+		//	if err != nil {
+		//		if os.IsNotExist(err) {
+		//			fmt.Printf("%s does not exist", finalDir)
+		//			os.Exit(0)
+		//		}
+		//	} else {
+		//		fmt.Printf("Removing %s\n", finalDir)
+		//		err := os.RemoveAll(finalDir) // Remove the directory
+		//		if err != nil {
+		//			fmt.Printf("\nCould not remove %s", finalDir)
+		//		}
+		//	}
+
 	}
 }
