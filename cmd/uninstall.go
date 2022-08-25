@@ -2,14 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
+	"runtime"
 )
+
+var Force bool
 
 func init() {
 	rootCmd.AddCommand(removeCmd)
+	removeCmd.Flags().BoolVarP(&Force, "force", "f", false, "Force removal of installed packages")
 }
 
 var removeCmd = &cobra.Command{
@@ -22,37 +27,48 @@ var removeCmd = &cobra.Command{
 }
 
 func removeInstalled(packages []string) {
-	fmt.Println("Checking if the packages are installed.")
+	fmt.Println("Checking if the packages are installed...")
 	for i := 0; i < len(packages); i++ {
 		fmt.Printf("%s\n", packages[i])
 	}
-	stageDir := utils.ShareDir()
 	for i := 0; i < len(packages); i++ {
-		dir := path.Join(stageDir, packages[i])
-		finalDir := utils.HandleDir(dir)
-		fmt.Printf("finaldir: %s", finalDir)
-		_, err := os.Lstat(finalDir)
+		stageDir := path.Join(utils.ShareDir(), packages[i]) // stage directory
+		fmt.Println(stageDir)
+		ctpYaml := stageDir + "/.catppuccin.yaml" // Set the directory for .catppuccin.yaml and read it.
+		yamlContent, err := os.ReadFile(ctpYaml)
 		if err != nil {
-			fmt.Println("somdthing")
+			fmt.Println("\nCould not read file.")
+			os.Exit(1)
 		}
-		//fmt.Printf("%s: ", status.Name())
-		//stageDir := utils.ShareDir() // Get the staging directory
-		//for i := 0; i < len(packages); i++ {
-		//	dir := path.Join(stageDir, packages[i]) // Join staging directory and the package
-		//	finalDir := utils.HandleDir(dir)              // Handle "%APPDATA%" and "~"
-		//	_, err := os.Lstat(finalDir)            // Check if the directory exists
-		//	if err != nil {
-		//		if os.IsNotExist(err) {
-		//			fmt.Printf("%s does not exist", finalDir)
-		//			os.Exit(0)
-		//		}
-		//	} else {
-		//		fmt.Printf("Removing %s\n", finalDir)
-		//		err := os.RemoveAll(finalDir) // Remove the directory
-		//		if err != nil {
-		//			fmt.Printf("\nCould not remove %s", finalDir)
-		//		}
-		//	}
-
+		ctprc, err := structs.UnmarshalProgram(yamlContent)
+		if err != nil {
+			fmt.Println("\nCould not unmarshal file.")
+		}
+		fileLoc := "" // Determine the OS and set the installation direction from .catppuccin.yaml
+		if runtime.GOOS == "windows" {
+			fileLoc = utils.HandleDir(ctprc.Installation.InstallLocation.Windows)
+		} else if runtime.GOOS == "linux" {
+			fileLoc = utils.HandleDir(ctprc.Installation.InstallLocation.Linux)
+		} else {
+			fileLoc = utils.HandleDir(ctprc.Installation.InstallLocation.Macos)
+		}
+		finalDir := path.Join(fileLoc, ctprc.Installation.To) // Sets the final direction for installation
+		_, err = os.Lstat(finalDir)                           // Check for existence of the file and remove it.
+		if err != nil {
+			fmt.Printf("Could not find %s.", finalDir)
+		} else {
+			fmt.Printf("\nFound %s! Removing...", finalDir)
+			err := os.RemoveAll(finalDir)
+			if err != nil {
+				fmt.Printf("Could not remove %s.", finalDir)
+			}
+			if Force == true { // If Force is set to true, we remove the staging directory for the file too.
+				fmt.Printf("\nFound %s...", stageDir)
+				err := os.RemoveAll(stageDir)
+				if err != nil {
+					fmt.Printf("Could not remove %s.", stageDir)
+				}
+			}
+		}
 	}
 }
