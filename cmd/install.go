@@ -5,16 +5,9 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/user"
-	"path"
-	"regexp"
 	"runtime"
-	"strings"
-	"time"
-
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
-	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )
 
@@ -66,8 +59,8 @@ func installer(packages []string) {
 
 	fmt.Println("\nChecking for installed packages:")
 	programs := []structs.Program{}
-	programsLocations := []string{}
-	programsURLs := []string{}
+	programLocations := []string{}
+	programNames := []string{}
 
 	for i := 0; i < len(success); i++ {
 		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.catppuccin.yaml"
@@ -90,13 +83,13 @@ func installer(packages []string) {
 			fmt.Println(ctprc.AppName)
 			InstallDir := ""
 			if runtime.GOOS == "windows" {
-				InstallDir = handleDir(ctprc.Installation.InstallLocation.Windows)
+				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Windows)
 				fmt.Printf(InstallDir)
 			} else if runtime.GOOS == "linux" {
-				InstallDir = handleDir(ctprc.Installation.InstallLocation.Linux)
+				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Linux)
 				fmt.Printf(InstallDir)
 			} else {
-				InstallDir = handleDir(ctprc.Installation.InstallLocation.Macos) // Just make the naive assumption that if it's not Windows or Linux, it's MacOS.
+				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Macos) // Just make the naive assumption that if it's not Windows or Linux, it's MacOS.
 				fmt.Printf(InstallDir)
 			}
 			_, err = os.Stat(InstallDir)
@@ -107,159 +100,30 @@ func installer(packages []string) {
 				fmt.Printf("%s path found at %s", ctprc.AppName, InstallDir)
 
 				programs = append(programs, ctprc)
-				programsLocations = append(programsLocations, InstallDir)
-				programsURLs = append(programsURLs, success[i])
-
+				programLocations = append(programLocations, InstallDir)
+				programNames = append(programNames, success[i])
 			}
 		}
 	}
 	for i := 0; i < len(programs); i++ {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
-		baseDir := cloneRepo(programs[i].AppName)
+		baseDir := utils.CloneRepo(programNames[i])
 		ctprc := programs[i]
 		//Symlink the repo
 		switch Flavour {
 		// TO-DO: Implement modes
 		case "all":
-			makeLinks(baseDir, ctprc.Installation.InstallFlavours.All.Default, ctprc.Installation.To, programsLocations[i]) // The magic line
+			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.All.Default, ctprc.Installation.To, programLocations[i]) // The magic line
 		case "latte":
-			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Latte.Default, ctprc.Installation.To, programsLocations[i])
+			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Latte.Default, ctprc.Installation.To, programLocations[i])
 		case "frappe":
-			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe.Default, ctprc.Installation.To, programsLocations[i])
+			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe.Default, ctprc.Installation.To, programLocations[i])
 		case "macchiato":
-			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato.Default, ctprc.Installation.To, programsLocations[i])
+			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato.Default, ctprc.Installation.To, programLocations[i])
 		case "mocha":
-			makeLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha.Default, ctprc.Installation.To, programsLocations[i])
+			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha.Default, ctprc.Installation.To, programLocations[i])
 		}
 	}
 }
 
-func handleDir(dir string) string {
-	usr, _ := user.Current()
-	if strings.Contains(dir, "%userprofile%") { // For programs which store config on per-user basis like vscode
-		dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
-		fmt.Printf(dir)
-	}
-	dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
-	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
-	appdata, _ := os.UserConfigDir()
-	dir = strings.Replace(dir, "%appdata%", appdata, -1)
-	return dir
 
-}
-
-func makeLink(from string, to string, name string) {
-	if to[len(to)-1:] != "/" {
-		fmt.Println("'to' is not a directory wtf")
-	} else {
-		// Symlink the directory
-		err := os.Symlink(from, path.Join(to, name)) /* Example:
-		 * (Folder)
-		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default
-		 * to:   ~/.config/helix/
-		 * name: themes/
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
-		 * (File)
-		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
-		 * to:   ~/.config/helix/
-		 * name: themes/catppuccin_mocha.toml
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-}
-
-func makeLinks(baseDir string, links []string, to string, finalDir string) {
-	/* An explanation of these ambiguous names
-	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
-	 * links    - a list of files that we loop through to make links of
-	 * to       - the location these were meant to be linked to, not including the actual path
-	 * finalDir - the actual path they are going to
-	 */
-	fmt.Println("Making symlinks....")
-	// Regex last-item match
-	re, _ := regexp.Compile(`\/[^\/]*$`)
-	// Iterate over links and use makeLink to make the links
-	for i := 0; i < len(links); i++ {
-		link := path.Join(baseDir, links[i])
-		// Use the regex to get the last part of the file URL and append it to the `to`
-		shortPath := re.FindString(link)
-		name := to
-		if strings.Contains(shortPath[2:], ".") {
-			// Path is a file, handle that
-			name = path.Join(to, shortPath)
-			handleFilePath(finalDir, name)
-		} else {
-			handleDirPath(finalDir, name)
-		}
-		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
-		// Use the name as name, the link as the from, and the finalDir as the to
-		makeLink(link, finalDir, name)
-	}
-}
-
-func handleDirPath(finalDir string, name string) {
-	// Check if dir to link already exists
-	fullDir := path.Join(finalDir, name)
-	var resp string
-	if utils.PathExists(fullDir) {
-		fmt.Printf("Directory %s already exists.\nWould you like to move the directory?(y/N): ", fullDir)
-		if fmt.Scan(&resp); resp == "y" {
-			fmt.Println("\nReplacing directory...")
-			prefix, suffix := path.Split(fullDir)
-			renamed := suffix + "-" + time.Now().Format("06-01-02")
-			renamed = path.Join(prefix, renamed)
-			err := os.Rename(fullDir, renamed)
-			if err != nil {
-				fmt.Println("Failed to move directory. You may have to rerun this command with elevated permissions, or the old directory may already exist.")
-				fmt.Printf("(Error: %s)\n", err)
-			}
-		}
-	}
-}
-
-func handleFilePath(finalDir string, name string) {
-	// Check if dir to link already exists
-	fileFolder, _ := path.Split(name)
-	fullDir := path.Join(finalDir, fileFolder)
-	if !utils.PathExists(fullDir) {
-		err := os.Mkdir(fullDir, 0755)
-		if err != nil {
-			fmt.Printf("Failed to create parent directory %s", fullDir)
-		}
-	}
-}
-
-func cloneRepo(repo string) string {
-	stagePath := path.Join(shareDir(), repo)
-	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-		URL:      "https://github.com/catppuccin-rfc/" + repo + ".git",
-		Progress: os.Stdout,
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-	return stagePath
-}
-
-func shareDir() string {
-	if utils.IsWindows() {
-		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
-	}
-	return path.Join(utils.GetEnv("XDG_DATA_HOME", handleDir("~/.local/")), "share/catppuccin-cli")
-}
-
-func UserHomeDir() string {
-	if runtime.GOOS == "windows" {
-		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-		if home == "" {
-			home = os.Getenv("USERPROFILE")
-		}
-		return home
-	}
-	return os.Getenv("HOME")
-}

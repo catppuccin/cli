@@ -39,6 +39,7 @@ func searchPackage(searchQuery []string) {
 	//qc, err := structs.UnmarshalSearch(fileJSON)
 	//qc := structs.SearchRes{}
 	//var qc structs.SearchRes
+	fmt.Println(fileJSON)
 	qc, err := structs.UnmarshalSearch(fileJSON) // Please figure this part out I have picked my brains on this for some hours now. :sadcat:
 	if err != nil {
 		fmt.Printf("Cannot unmarshal file. %s", err)

@@ -1,7 +1,6 @@
 package structs
 
 import (
-	"encoding/json"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,17 +14,6 @@ func (r *Program) Marshal() ([]byte, error) {
 	return yaml.Marshal(r)
 }
 
-func UnmarshalSearch(data []byte) (SearchRes, error) {
-	var s SearchRes
-	//s := SearchRes{}
-	err := json.Unmarshal(data, &s)
-	return s, err
-}
-
-type SearchRes struct {
-	Name string `json:"name"`
-	Id   string `json:"id"`
-}
 
 type Program struct {
 	AppName      string       `yaml:"app_name"`
