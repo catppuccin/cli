@@ -196,26 +196,3 @@ func PullUpdates(repo string) {
 		}
 	}
 }
-
-func GetLink(baseDir string, links []string, to string, finalDir string) {
-	//fmt.Println("Making symlinks....")
-	// Regex last-item match
-	re, _ := regexp.Compile(`\/[^\/]*$`)
-	// Iterate over links and use makeLink to make the links
-	for i := 0; i < len(links); i++ {
-		link := path.Join(baseDir, links[i])
-		// Use the regex to get the last part of the file URL and append it to the `to`
-		shortPath := re.FindString(link)
-		name := to
-		if strings.Contains(shortPath[2:], ".") {
-			// Path is a file, handle that
-			name = path.Join(to, shortPath)
-			HandleFilePath(finalDir, name)
-		} else {
-			HandleDirPath(finalDir, name)
-		}
-		//fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
-		symlinkDir := finalDir + name
-		fmt.Printf("Directory is: %s", symlinkDir)
-	}
-}
