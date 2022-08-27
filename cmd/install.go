@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"runtime"
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/spf13/cobra"
 )
 
 var Flavour string
@@ -51,7 +51,8 @@ func installer(packages []string) {
 		}
 		if res.StatusCode != 200 {
 			fmt.Printf("\n%s does not have a .catppuccin.yaml", repo)
-			continue
+			//continue
+			os.Exit(1)
 		} else {
 			success = append(success, string(repo))
 		}
@@ -125,5 +126,3 @@ func installer(packages []string) {
 		}
 	}
 }
-
-

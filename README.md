@@ -12,6 +12,7 @@
 </p>
 
 <p align="center">
+
 	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/sample.png"/>
 </p>
 
@@ -22,6 +23,14 @@ It allows you to:
 - Install themes with one command
 - Uninstall themes with one command
 - Update themes with one command
+
+## Installation
+- You can download the executable for this project from the releases section. Download the release as per your OS. 
+
+## Development 
+- The foremost requirement to develop is to make sure that go version 1.19 is installed. 
+- Clone the repository and switch to the dev branch. 
+- Make all the changes to dev branch. To build the executable run `go build -o ctp`. 
 
 &nbsp;
 
