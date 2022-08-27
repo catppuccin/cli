@@ -32,6 +32,8 @@ It allows you to:
 - Clone the repository and switch to the dev branch. 
 - Make all the changes to dev branch. To build the executable run `go build -o ctp`. 
 
+## Note 
+- You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
 &nbsp;
 
 <p align="center">
