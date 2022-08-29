@@ -319,6 +319,7 @@ func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir strin
   }
 }
 
+// InstallFlavours is a wrapper for InstallLinks which takes the flavour and handles the install accordingly
 func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) {
 		switch flavour {
       case "all":
