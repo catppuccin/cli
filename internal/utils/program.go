@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v47/github"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 // GetEnv gets an environment variable.
@@ -79,13 +79,26 @@ func HandleDir(dir string) string {
 // MakeLink makes a symlink from a path to another path with a suffix.
 func makeLink(from string, to string, name string) {
 	if to[len(to)-1:] != "/" {
-		fmt.Println("'to' is not a directory wtf")
+		fmt.Printf("\n'%s' is not a directory.", to)
+		os.Exit(1)
+	} else if PathExists(to + name) { // To check if the complete path already exists in the case of single files
+		// This removes the original symlink and overwrites it with a new one
+		fmt.Println("Symlink already exists. Removing and relinking...")
+		err := os.Remove(to + name)
+		if err != nil {
+			fmt.Printf("Failed to remove symlink. (Error: %s)\n", err)
+			os.Exit(1)
+		}
+		err = os.Symlink(from, path.Join(to, name))
+		if err != nil {
+			fmt.Println(err)
+		}
 	} else {
 		// Symlink the directory
 		err := os.Symlink(from, path.Join(to, name)) /* Example:
-		 * (Folder)
+		 * (Folder)cin-cli/Helix/them
 		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default
+		 * from: ~/.local/share/catppuces/default
 		 * to:   ~/.config/helix/
 		 * name: themes/
 		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
@@ -102,7 +115,7 @@ func makeLink(from string, to string, name string) {
 	}
 }
 
-// MakeLinks loops through a list and converts it's attributes into arguments for MakeLink.
+// MakeLinks loops through a list and converts its attributes into arguments for MakeLink.
 func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	/* An explanation of these ambiguous names
 	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
@@ -140,7 +153,7 @@ func HandleDirPath(finalDir string, name string) {
 	if PathExists(fullDir) {
 		fmt.Printf("Directory %s already exists.\nWould you like to move the directory?(y/N): ", fullDir)
 		if fmt.Scan(&resp); resp == "y" {
-			fmt.Println("\nReplacing directory...")
+			fmt.Println("\nReplacing directory...") // What have you done DUKKKKK???!!
 			prefix, suffix := path.Split(fullDir)
 			renamed := suffix + "-" + time.Now().Format("06-01-02")
 			renamed = path.Join(prefix, renamed)
@@ -149,6 +162,8 @@ func HandleDirPath(finalDir string, name string) {
 				fmt.Println("Failed to move directory. You may have to rerun this command with elevated permissions, or the old directory may already exist.")
 				fmt.Printf("(Error: %s)\n", err)
 			}
+		} else {
+			os.Exit(1)
 		}
 	}
 }
@@ -214,14 +229,14 @@ func ListContains(list []string, contains string) bool {
 
 // UpdateJSON makes a search request for all Catppuccin repos and caches them.
 func UpdateJSON() {
-	dir := path.Join(ShareDir(), "repos.json")   // Set the staging directory plus the file name
+	dir := path.Join(ShareDir(), "repos.json") // Set the staging directory plus the file name
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	client := github.NewClient(nil)
 
 	// Get all the Catppuccin repositories
 	opt := &github.RepositoryListByOrgOptions{Type: "public"} // Get all the repositories
 	repos, _, err := client.Repositories.ListByOrg(context.Background(), org, opt)
-	
+
 	// Handle errors
 	if err != nil {
 		fmt.Println("Failed to get repositories.")
@@ -233,8 +248,8 @@ func UpdateJSON() {
 			if !ListContains(repo.Topics, "catppuccin-meta") { // Repo does not contain catppuccin-meta topic
 				// Append search result
 				theme := structs.SearchEntry{
-					Name: repo.GetName(),
-					Stars: repo.GetStargazersCount(),
+					Name:   repo.GetName(),
+					Stars:  repo.GetStargazersCount(),
 					Topics: repo.Topics,
 				}
 				themes = append(themes, theme)
@@ -269,7 +284,7 @@ func BoolAnd(first bool, second bool) bool {
 func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 	var best structs.SearchEntry
 	bestScore := -1000
-	for i := 0;i < len(repos);i++ {
+	for i := 0; i < len(repos); i++ {
 		repo := repos[i]
 		better := false
 		rank := fuzzy.RankMatch(term, repo.Name)
@@ -278,7 +293,7 @@ func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 			topic := repo.Topics[e]
 			rank = fuzzy.RankMatch(term, topic)
 			bestScore, better = CheckBetter(bestScore, rank, better) // Basically what this does is goes and tells us the best match of the topic, and sets that score in bestScore.
-																															 // If better is true, best becomes this repo. Just trust me on this. Just trust me on this.
+			// If better is true, best becomes this repo. Just trust me on this. Just trust me on this.
 		}
 		if better {
 			best = repo

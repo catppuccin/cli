@@ -38,17 +38,18 @@ func searchPackage(searchQuery []string) {
 		fmt.Println("Cannot open file. ")
 		os.Exit(1)
 	}
-	//qr := []structs.SearchRes{}
-	//qc, err := structs.UnmarshalSearch(fileJSON)
-	//qc := structs.SearchRes{}
-	//var qc structs.SearchRes
 	for i := 0; i < len(searchQuery); i++ {
 		cache, err := structs.UnmarshalSearch(body)
 		if err != nil {
 			fmt.Printf("Error opening cache: %s", err)
 		} else {
 			result := utils.SearchRepos(cache, searchQuery[i])
+			var resp string
 			fmt.Printf("Found repo: %s", result.Name)
+			fmt.Println("Do you want to install it? (Y/n)")
+			if fmt.Scanln(&resp); resp == "Y" || resp == "y" {
+				installer(searchQuery)
+			}
 		}
 	}
 }
