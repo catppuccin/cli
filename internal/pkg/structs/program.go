@@ -27,11 +27,10 @@ type InstallLocation struct {
 	Windows string `yaml:"windows"`
 }
 
-type Additional interface{}
 
 type Entry struct {
-	Default    []string   `yaml:"default"`
-	Additional Additional `yaml:"additional"`
+	Default    []string            `yaml:"default"`
+	Additional map[string][]string `yaml:"additional"`
 }
 
 type InstallFlavours struct {

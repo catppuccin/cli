@@ -12,12 +12,12 @@ import (
 )
 
 var Flavour string
-var Modes string
+var Mode string
 
 func init() {
 	rootCmd.AddCommand(installCmd)
 	installCmd.Flags().StringVarP(&Flavour, "flavour", "f", "all", "Custom flavour")
-	installCmd.Flags().StringVarP(&Modes, "mode", "m", "default", "Custom mode")
+	installCmd.Flags().StringVarP(&Mode, "mode", "m", "default", "Custom mode")
 }
 
 var installCmd = &cobra.Command{
@@ -31,7 +31,6 @@ var installCmd = &cobra.Command{
 
 func installer(packages []string) {
 	// Hard-coded variables, will add functionality to change these via flags
-	//mode := "default"
 	fmt.Println("Installing packages...")
 	for i := 0; i < len(packages); i++ {
 		fmt.Println(packages[i])
@@ -108,21 +107,10 @@ func installer(packages []string) {
 	for i := 0; i < len(programs); i++ {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
 		baseDir := utils.CloneRepo(programNames[i])
+    installLoc := programLocations[i]
 		ctprc := programs[i]
 		//Symlink the repo
-		switch Flavour {
-		// TO-DO: Implement modes
-		case "all":
-			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.All.Default, ctprc.Installation.To, programLocations[i]) // The magic line
-		case "latte":
-			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Latte.Default, ctprc.Installation.To, programLocations[i])
-		case "frappe":
-			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe.Default, ctprc.Installation.To, programLocations[i])
-		case "macchiato":
-			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato.Default, ctprc.Installation.To, programLocations[i])
-		case "mocha":
-			utils.MakeLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha.Default, ctprc.Installation.To, programLocations[i])
-		}
+    utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
 	}
 }
 

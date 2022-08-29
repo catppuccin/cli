@@ -286,3 +286,35 @@ func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 	}
 	return best // Return the best match
 }
+
+// InstallLinks is a wrapper over MakeLinks that parses the mode and uses it to create the correct link, as specified by the ctprc.
+func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) {
+  if mode == "default" {
+    // Default mode, just run makeLinks
+    MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
+  } else {
+    // Mode code
+    modes := entry.Additional
+    modeEntry := modes[mode]
+    if modeEntry == nil {
+      fmt.Printf("Mode '%s' does not exist.\n", mode)
+    } else {
+      MakeLinks(baseDir, modeEntry, to, finalDir)
+    }
+  }
+}
+
+func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) {
+		switch flavour {
+      case "all":
+        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
+      case "latte":
+        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
+      case "frappe":
+        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
+      case "macchiato":
+        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
+      case "mocha":
+        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
+    }
+}
