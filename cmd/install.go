@@ -113,4 +113,5 @@ func installer(packages []string) {
 		//Symlink the repo
     utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
 	}
+  // nya~
 }
