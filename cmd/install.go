@@ -98,7 +98,6 @@ func installer(packages []string) {
 				fmt.Printf("%s was not detected. %s\n", InstallDir, err)
 			} else {
 				fmt.Printf("%s path found at %s", ctprc.AppName, InstallDir)
-
 				programs = append(programs, ctprc)
 				programLocations = append(programLocations, InstallDir)
 				programNames = append(programNames, success[i])
