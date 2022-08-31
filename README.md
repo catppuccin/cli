@@ -12,7 +12,8 @@
 </p>
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/sample.png"/>
+
+<img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/misc/sample.png"/>
 </p>
 
 ## Catppuccin CLI
@@ -23,6 +24,16 @@ It allows you to:
 - Uninstall themes with one command
 - Update themes with one command
 
+## Installation
+- You can download the executable for this project from the releases section. Download the release as per your OS. 
+
+## Development 
+- The foremost requirement to develop is to make sure that go version 1.19 is installed. 
+- Clone the repository and switch to the dev branch. 
+- Make all the changes to dev branch. To build the executable run `go build -o ctp`. 
+
+## Note 
+- You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
 &nbsp;
 
 <p align="center">
