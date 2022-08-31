@@ -2,10 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 
+	"github.com/catppuccin/cli/internal/ui"
 	"github.com/catppuccin/cli/internal/utils"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +27,14 @@ var newCmd = &cobra.Command{
 }
 
 func createRepo() {
+	p := tea.NewProgram(ui.InitialModel())
+
+	if err := p.Start(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func createRepoAlt() {
   fmt.Println("Creating new repo...")
   // Get current directory
   cwd, err := os.Getwd()

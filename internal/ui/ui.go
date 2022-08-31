@@ -1,4 +1,4 @@
-package cmd
+package ui
 
 
 import (
@@ -15,7 +15,7 @@ type model struct {
 	err       error
 }
 
-func initialModel() model {
+func InitialModel() model {
 	ti := textinput.New()
 	ti.Placeholder = "Helix"
 	ti.Focus()
