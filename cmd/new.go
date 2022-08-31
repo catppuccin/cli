@@ -5,12 +5,8 @@ import (
 	"os"
 	"path"
 
-	// "github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
-	// "io"
-	// "net/http"
-	// "runtime"
 )
 
 
