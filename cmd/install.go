@@ -107,7 +107,9 @@ func installer(packages []string) {
 	}
 	for i := 0; i < len(programs); i++ {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
-		baseDir := utils.CloneRepo(programNames[i])
+    programName := programNames[i]
+    installDir := utils.ShareDir() + programName
+		baseDir := utils.CloneRepo(installDir, programName)
     installLoc := programLocations[i]
 		ctprc := programs[i]
 		//Symlink the repo
