@@ -341,3 +341,15 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
         InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
     }
 }
+
+// CreateTemplate creates a template repo for the repo name specified.
+func CreateTemplate(repo string) {
+  // Get current directory
+  cwd, err := os.Getwd()
+  DieIfError(err, "Failed to get current directory.")
+  // Make project directory and clone
+  installPath := path.Join(cwd, repo)
+  err = os.Mkdir(installPath, 0755)
+  DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
+  CloneRepo(installPath, "template") // Clone the template repo into the installPath
+}
