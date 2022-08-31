@@ -182,7 +182,8 @@ func HandleFilePath(finalDir string, name string) {
 }
 
 // CloneRepo clones a repo into the specified location.
-func CloneRepo(stagePath string, repo string) string {
+func CloneRepo(repo string) string {
+	stagePath := path.Join(ShareDir(), repo)
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL:      fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
@@ -192,14 +193,6 @@ func CloneRepo(stagePath string, repo string) string {
 		fmt.Println(err)
 	}
 	return stagePath
-}
-
-// DieIfError kills the program if err is not nil.
-func DieIfError(err error, message string) {
-  if (err != nil) {
-    fmt.Println(message)
-    os.Exit(1)
-  }
 }
 
 // PullUpdates opens a git repo and pulls the latest changes.
