@@ -28,8 +28,15 @@ var DefaultKeyMap = KeyMap{
 type tickMsg struct{}
 type errMsg error
 
+type confirm struct {
+	choices   []string
+	cursor    int
+	selected  int
+}
+
 type model struct {
 	textInput textinput.Model
+	confirm   confirm
 	err       error
 }
 
@@ -39,9 +46,14 @@ func InitialModel() model {
 	ti.Focus()
 	ti.CharLimit = 256
 	ti.Width = 20
+	con := confirm{
+		choices: []string{"yes", "no"},
+		selected: 0,
+	}
 
 	return model{
 		textInput: ti,
+		confirm:   con,
 		err:       nil,
 	}
 }
