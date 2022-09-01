@@ -1,10 +1,10 @@
 package ui
 
-
 import (
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type tickMsg struct{}
@@ -38,10 +38,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+		case tea.KeyEnter:
+			utils.CreateTemplate(m.textInput.Value())
 		}
-
 
 	// Handle errors
 	case errMsg:
@@ -51,7 +52,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
-	
+
 }
 
 func (m model) View() string {
@@ -61,4 +62,3 @@ func (m model) View() string {
 		"(esc to quit)",
 	) + "\n"
 }
-
