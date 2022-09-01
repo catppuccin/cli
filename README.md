@@ -34,6 +34,20 @@ It allows you to:
 
 ## Note 
 - You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
+
+## Checklist 
+- [x]  Clone Template Repo
+- [ ]  Interactive Setup
+- [ ]  Custom Bubbletea UI
+    - [ ]  Theme Name
+    - [ ]  Interactive ctprc builder
+        - [ ]  Full Name
+        - [ ]  Program Name
+        - [ ]  Operating Systems
+        - [ ]  Install Location
+- [ ]  Handle inputs by renaming and editing files
+
+
 &nbsp;
 
 <p align="center">
