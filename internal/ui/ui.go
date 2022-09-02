@@ -2,36 +2,37 @@ package ui
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 
-	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-
 type KeyMap struct {
-  Up key.Binding
-  Down key.Binding
+	Up   key.Binding
+	Down key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
-  Up: key.NewBinding(
-    key.WithKeys("k", "up"),        // actual keybindings
-    key.WithHelp("↑/k", "move up"), // corresponding help text
-  ),
-  Down: key.NewBinding(
-    key.WithKeys("j", "down"),
-    key.WithHelp("↓/j", "move down"),
-  ),
+	Up: key.NewBinding(
+		key.WithKeys("k", "up"),        // actual keybindings
+		key.WithHelp("↑/k", "move up"), // corresponding help text
+	),
+	Down: key.NewBinding(
+		key.WithKeys("j", "down"),
+		key.WithHelp("↓/j", "move down"),
+	),
 }
+
 type tickMsg struct{}
 type errMsg error
 
 type confirm struct {
-	choices   []string
-	cursor    int
-	selected  int
+	choices  []string
+	cursor   int
+	selected int
 }
 
 type model struct {
@@ -47,7 +48,7 @@ func InitialModel() model {
 	ti.CharLimit = 256
 	ti.Width = 20
 	con := confirm{
-		choices: []string{"yes", "no"},
+		choices:  []string{"yes", "no"},
 		selected: 0,
 	}
 
@@ -71,7 +72,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyEnter:
-			utils.CreateTemplate(m.textInput.Value())
+			//utils.CreateTemplate(m.textInput.Value())
+			EnterVal := m.textInput.Value()
+			fmt.Printf("Enterval %T\n", EnterVal)
+			c := exec.Command("clear")
+			c.Stdout = os.Stdout
+			err := c.Run()
+			if err != nil {
+				return nil, nil
+			}
+			return m, tea.Quit
 		}
 
 	// Handle errors
