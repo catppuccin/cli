@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"log"
 
 	"github.com/catppuccin/cli/internal/ui"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
