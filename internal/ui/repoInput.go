@@ -5,7 +5,6 @@ import (
 	// "os"
 	// "os/exec"
 
-	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -64,12 +63,6 @@ func (m InitialModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m InitialModel) GetUserText(query string) tea.Cmd {
-	return func() tea.Msg {
-		utils.CreateTemplate(query)
-		return errMsg(nil)
-	}
-}
 
 func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -82,7 +75,8 @@ func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			// save value to global so it doesn't get lost
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
-			return models[spinnerView], tea.Batch(models[spinnerView].Init(), m.GetUserText(m.textInput.Value()))
+			RepoName = m.textInput.Value()
+			return models[spinnerView], models[spinnerView].Init()
 		}
 
 	case errMsg:

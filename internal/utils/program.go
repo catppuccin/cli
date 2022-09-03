@@ -186,7 +186,7 @@ func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL:      fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
-		Progress: os.Stdout,
+		// Progress: os.Stdout,
 	})
 	if err != nil {
 		fmt.Println(err)

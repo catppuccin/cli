@@ -1,6 +1,8 @@
 package ui
 
 import (
+
+	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -8,6 +10,13 @@ import (
 
 type SpinnerParent struct {
 	spinner spinner.Model
+}
+
+type spinnerMsg int
+
+func GetRepoName() tea.Msg {
+	utils.CreateTemplate(RepoName)
+	return spinnerMsg(1)
 }
 
 func NewSpinnerParent() *SpinnerParent {
@@ -18,7 +27,7 @@ func NewSpinnerParent() *SpinnerParent {
 }
 
 func (m SpinnerParent) Init() tea.Cmd {
-	return m.spinner.Tick
+	return tea.Batch(m.spinner.Tick, GetRepoName)
 }
 
 func (m SpinnerParent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -30,6 +39,10 @@ func (m SpinnerParent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
+	case spinnerMsg:
+		// Cloning completed, quit.
+		Cloned = true
+		return m, tea.Quit
 	}
 	m.spinner, cmd = m.spinner.Update(msg)
 	cmds = append(cmds, cmd)

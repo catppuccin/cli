@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -12,6 +14,9 @@ func Run() {
 	if err := p.Start(); err != nil {
 		panic(err)
 	}
+	if Cloned {
+		fmt.Println("Finished!")
+	}
 }
 
 // I put all the globals here :shrug:
@@ -20,7 +25,7 @@ var (
 	// current will be used to track the current model being returned from the
 	// list of models
 	current  int
-	EnterVal string
+	RepoName string
 	Cloned   bool // Planning to use this to determine when to exit the spinner when the repo is cloned.
 )
 
