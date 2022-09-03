@@ -12,6 +12,8 @@ type SpinnerParent struct {
 
 func NewSpinnerParent() *SpinnerParent {
 	spin := spinner.New()
+	spin.Spinner = spinner.Dot
+	spin.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	return &SpinnerParent{spinner: spin}
 }
 

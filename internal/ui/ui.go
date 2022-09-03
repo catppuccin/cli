@@ -21,6 +21,7 @@ var (
 	// list of models
 	current  int
 	EnterVal string
+	Cloned   bool // Planning to use this to determine when to exit the spinner when the repo is cloned.
 )
 
 const (
