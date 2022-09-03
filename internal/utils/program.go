@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
 	"regexp"
 	"runtime"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
@@ -352,4 +354,27 @@ func CreateTemplate(repo string) {
   err = os.Mkdir(installPath, 0755)
   DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
   CloneRepo(installPath, "template") // Clone the template repo into the installPath
+  ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
+  DieIfError(err, "Failed to open .catppuccin.yaml.")
+  defer ctprc.Close()
+  content, err := ioutil.ReadFile(path.Join(installPath, ".catppuccin.yaml"))
+  DieIfError(err, "Failed to read .catppuccin.yaml.")
+  type catppuccinyaml struct {
+		Name          string
+		Exec          string
+		MacosLocation string
+		LinuxLocation string
+		WinLocation   string
+  }
+  ctp, err := template.New("catppuccin").Parse(string(content))
+  DieIfError(err, "Failed to parse .catppuccin.yaml.")
+  catppuccin := catppuccinyaml{
+  	Name: repo,
+  	Exec: "exec",
+  	MacosLocation: "Applications/thing",
+  	LinuxLocation: "~/.config/thing",
+  	WinLocation:   "%appdata%/thing",
+  }
+  err = ctp.Execute(ctprc, catppuccin)
+  DieIfError(err, fmt.Sprintf("Failed to edit .catppuccin.yaml:%s", err))
 }

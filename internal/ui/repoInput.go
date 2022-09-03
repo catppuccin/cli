@@ -29,32 +29,21 @@ var DefaultKeyMap = KeyMap{
 	),
 }
 
-type confirm struct {
-	choices  []string
-	cursor   int
-	selected int
-}
 
 type InitialModel struct {
 	textInput textinput.Model
-	confirm   confirm
 	err       error
 }
 
 func NewInitialModel() InitialModel {
 	ti := textinput.New()
-	ti.Placeholder = "helix"
+	ti.Placeholder = "Helix"
 	ti.Focus()
 	ti.CharLimit = 256
 	ti.Width = 20
-	con := confirm{
-		choices:  []string{"yes", "no"},
-		selected: 0,
-	}
 
 	return InitialModel{
 		textInput: ti,
-		confirm:   con,
 		err:       nil,
 	}
 }
@@ -76,7 +65,7 @@ func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// save value to global so it doesn't get lost
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
 			RepoName = m.textInput.Value()
-			return models[spinnerView], models[spinnerView].Init()
+			return models[initialView+1], models[initialView+1].Init()
 		}
 
 	case errMsg:
