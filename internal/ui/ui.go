@@ -8,7 +8,7 @@ import (
 
 func Run() {
 	// init models, we can reset them at any time anyway
-	models = []tea.Model{NewInitialModel(), NewSpinnerParent()}
+	models = []tea.Model{NewInitialModel(), NewExecModel(), NewSpinnerParent()}
 	m := models[initialView]
 	p := tea.NewProgram(m)
 	if err := p.Start(); err != nil {
@@ -26,11 +26,13 @@ var (
 	// list of models
 	current  int
 	RepoName string
+	ExecName string
 	Cloned   bool // Planning to use this to determine when to exit the spinner when the repo is cloned.
 )
 
 const (
 	initialView = iota
+	execView
 	spinnerView
 )
 

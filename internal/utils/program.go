@@ -345,7 +345,7 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
 }
 
 // CreateTemplate creates a template repo for the repo name specified.
-func CreateTemplate(repo string) {
+func CreateTemplate(repo string, exec string) {
   // Get current directory
   cwd, err := os.Getwd()
   DieIfError(err, "Failed to get current directory.")
@@ -370,7 +370,7 @@ func CreateTemplate(repo string) {
   DieIfError(err, "Failed to parse .catppuccin.yaml.")
   catppuccin := catppuccinyaml{
   	Name: repo,
-  	Exec: "exec",
+  	Exec: exec,
   	MacosLocation: "Applications/thing",
   	LinuxLocation: "~/.config/thing",
   	WinLocation:   "%appdata%/thing",
