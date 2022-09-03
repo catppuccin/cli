@@ -1,50 +1,31 @@
 package ui
 
 import (
-// "github.com/muesli/reflow/indent"
-  tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
-type spinnerMsg string
-
-var repoName string
-
-func makeSpinner(val string) tea.Cmd {
-	// Returns a type that will have the program update to a spinner
-	return func() tea.Msg {
-	  return spinnerMsg(val)
+func run() {
+	// init models, we can reset them at any time anyway
+	models = []tea.Model{NewInitialModel(), NewSpinnerParent()}
+	m := models[initialView]
+	p := tea.NewProgram(m)
+	if err := p.Start(); err != nil {
+		panic(err)
 	}
 }
 
-type ui struct {
-  Current  tea.Model
-}
+// I put all the globals here :shrug:
+var (
+	models []tea.Model
+	// current will be used to track the current model being returned from the
+	// list of models
+	current  int
+	EnterVal string
+)
 
-func InitialUi() ui {
-  return ui{
-    Current: InitialModel(),
-  }
-}
+const (
+	initialView = iota
+	spinnerView
+)
 
-func (m ui) Init() tea.Cmd {
-  return m.Current.Init()
-}
-
-func (m ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-  var cmd tea.Cmd
-  commands := []tea.Cmd{}
-
-  switch msg := msg.(type) {
-  case spinnerMsg:
-    m.Current = InitialModelSpinner()
-    repoName = string(msg)
-    commands = append(commands, m.Current.Init())
-  }
-  m.Current, cmd =  m.Current.Update(msg)
-  commands = append(commands, cmd)
-  return m, tea.Batch(commands...)
-}
-
-func (m ui) View() string {
-  return m.Current.View()
-}
+type errMsg error
