@@ -1,61 +1,39 @@
 package ui
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-//type errMsg error
-
-type modelSpinner struct {
-	spinner  spinner.Model
-	quitting bool
-	err      error
+type SpinnerParent struct {
+	spinner spinner.Model
 }
 
-func InitialModelSpinner() modelSpinner {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	return modelSpinner{spinner: s}
-}
-func (j modelSpinner) Init() tea.Cmd {
-	return j.spinner.Tick
+func NewSpinnerParent() *SpinnerParent {
+	spin := spinner.New()
+	return &SpinnerParent{spinner: spin}
 }
 
-func (j modelSpinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m SpinnerParent) Init() tea.Cmd {
+	return m.spinner.Tick
+}
+
+func (m SpinnerParent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
-
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "esc", "ctrl+c":
-			j.quitting = true
-			return j, tea.Quit
-		default:
-			return j, nil
+		case "ctrl+c", "q":
+			return m, tea.Quit
 		}
-
-	case errMsg:
-		j.err = msg
-		return j, nil
-
-	default:
-		var cmd tea.Cmd
-		j.spinner, cmd = j.spinner.Update(msg)
-		return j, cmd
 	}
-
+	m.spinner, cmd = m.spinner.Update(msg)
+	cmds = append(cmds, cmd)
+	return m, tea.Batch(cmds...)
 }
-func (j modelSpinner) View() string {
-	if j.err != nil {
-		return j.err.Error()
-	}
-	str := fmt.Sprintf("\n\n   %s Loading forever...press q to quit\n\n", j.spinner.View())
-	//fmt.Printf()
-	if j.quitting {
-		return str + "\n"
-	}
-	return str
+
+func (m SpinnerParent) View() string {
+	return lipgloss.JoinVertical(lipgloss.Left, "Setting up repo...", m.spinner.View())
 }
