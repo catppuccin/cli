@@ -38,10 +38,10 @@ func (m ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
   case spinnerMsg:
     m.Current = InitialModelSpinner()
     repoName = string(msg)
-    commands := append(commands, m.Current.Init)
+    commands = append(commands, m.Current.Init)
   }
   m.Current, cmd =  m.Current.Update(msg)
-  commands := append(commands, cmd)
+  commands = append(commands, cmd)
   return m, tea.Batch(commands...)
 }
 
