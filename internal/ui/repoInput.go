@@ -1,15 +1,16 @@
-package ui
-
 import (
-	"fmt"
+
 	// "os"
 	// "os/exec"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
+// you don't need these keymaps but they can be helpful for generating the help
+// menu for you
 type KeyMap struct {
 	Up   key.Binding
 	Down key.Binding
@@ -26,22 +27,19 @@ var DefaultKeyMap = KeyMap{
 	),
 }
 
-type tickMsg struct{}
-type errMsg error
-
 type confirm struct {
 	choices  []string
 	cursor   int
 	selected int
 }
 
-type model struct {
+type InitialModel struct {
 	textInput textinput.Model
 	confirm   confirm
 	err       error
 }
 
-func InitialModel() model {
+func NewInitialModel() InitialModel {
 	ti := textinput.New()
 	ti.Placeholder = "Helix"
 	ti.Focus()
@@ -52,19 +50,18 @@ func InitialModel() model {
 		selected: 0,
 	}
 
-	return model{
+	return InitialModel{
 		textInput: ti,
 		confirm:   con,
 		err:       nil,
 	}
 }
 
-
-func (m model) Init() tea.Cmd {
+func (m InitialModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -73,26 +70,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyEnter:
-			//utils.CreateTemplate(m.textInput.Value())
-			EnterVal := m.textInput.Value()
-			return m, makeSpinner(EnterVal)
+			// save value to global so it doesn't get lost
+			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
+			EnterVal = m.textInput.Value()
+			return models[spinnerView], models[spinnerView].Init()
 		}
 
-	// Handle errors
 	case errMsg:
 		m.err = msg
-		return m, nil
 	}
 
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
-
 }
 
-func (m model) View() string {
-	return fmt.Sprintf(
-		"What's the project name?\n\n%s\n\n%s",
+func (m InitialModel) View() string {
+	// lipgloss will format the layout for you
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		"What's the project name?",
 		m.textInput.View(),
 		"(esc to quit)",
-	) + "\n"
+	)
 }
