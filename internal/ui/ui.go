@@ -32,17 +32,17 @@ func (m ui) Init() tea.Cmd {
 
 func (m ui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
   var cmd tea.Cmd
+  commands := []tea.Cmd{}
 
   switch msg := msg.(type) {
   case spinnerMsg:
     m.Current = InitialModelSpinner()
-    init := m.Current.Init()
-    init()
     repoName = string(msg)
-    return m, nil
+    commands := append(commands, m.Current.Init)
   }
   m.Current, cmd =  m.Current.Update(msg)
-  return m, cmd
+  commands := append(commands, cmd)
+  return m, tea.Batch(commands...)
 }
 
 func (m ui) View() string {
