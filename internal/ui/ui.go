@@ -4,7 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func run() {
+func Run() {
 	// init models, we can reset them at any time anyway
 	models = []tea.Model{NewInitialModel(), NewSpinnerParent()}
 	m := models[initialView]
