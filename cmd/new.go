@@ -22,13 +22,15 @@ var newCmd = &cobra.Command{
 }
 
 func createRepo() {
-	p := tea.NewProgram(ui.InitialModel())
+	p := tea.NewProgram(ui.InitialUi())
 	if err := p.Start(); err != nil {
 		log.Fatal(err)
 	}
+	/*
 	spinner := tea.NewProgram(ui.InitialModelSpinner()) // Spinner code. We can remove this for now.
 	// Just here for demonstration purpose right now.
 	if err := spinner.Start(); err != nil {
 		log.Fatal(err)
 	}
+	*/
 }
