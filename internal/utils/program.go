@@ -9,11 +9,13 @@ import (
 	"path"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v47/github"
 	"github.com/lithammer/fuzzysearch/fuzzy"
@@ -185,9 +187,12 @@ func HandleFilePath(finalDir string, name string) {
 // CloneRepo clones a repo into the specified location.
 func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
+	progress := GitProgress{
+		Progress: 0,
+	}
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
-		// Progress: os.Stdout,
+		Progress: progress,
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -378,4 +383,20 @@ func CreateTemplate(repo string, exec string) {
 
 	err = ctp.Execute(ctprc, catppuccin)
 	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
+}
+
+type GitProgress struct {
+	Progress int
+}
+
+var re *regexp.Regexp = regexp.MustCompile(`Compressing objects:\s*(\d*)%`)
+
+func (g GitProgress) Write (p []byte) (n int, err error) {
+	data := string(p)
+	matches := re.FindStringSubmatch(data)
+	if len(matches) > 1 {
+		percentage, _ := strconv.Atoi(matches[1])
+		g.Progress = percentage
+	}
+	return len(p), err
 }

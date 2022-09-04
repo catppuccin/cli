@@ -26,14 +26,14 @@ func NewProgressParent() *ProgressParent {
 }
 
 func (m ProgressParent) Init() tea.Cmd {
-	return tickCmd()
+	return nil
 }
 func (m ProgressParent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg.(type) {
 	case tea.KeyMsg:
 		return m, tea.Quit
 	}
-	return m, nil // Placeholder code for now.
+	return m, nil // Placeholder code forever
 }
 
 func (m ProgressParent) Write(io io.Writer) tea.Cmd {
