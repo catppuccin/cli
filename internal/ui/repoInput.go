@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"strings"
 )
 
 // you don't need these keymaps but they can be helpful for generating the help
@@ -28,7 +29,6 @@ var DefaultKeyMap = KeyMap{
 		key.WithHelp("↓/j", "move down"),
 	),
 }
-
 
 type InitialModel struct {
 	textInput textinput.Model
@@ -52,7 +52,6 @@ func (m InitialModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-
 func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -64,7 +63,8 @@ func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			// save value to global so it doesn't get lost
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
-			RepoName = m.textInput.Value()
+			RepoName = strings.TrimSpace(m.textInput.Value()) // QOL addition to remove spaces so that the directory formed is `helix` and
+			// not `helix\ /`
 			return models[initialView+1], models[initialView+1].Init()
 		}
 
