@@ -37,15 +37,14 @@ It allows you to:
 
 ## Checklist 
 - [x]  Clone Template Repo
-- [ ]  Interactive Setup
+- [x]  Interactive Setup
 - [ ]  Custom Bubbletea UI
-    - [ ]  Theme Name
+    - [x]  Theme Name
     - [ ]  Interactive ctprc builder
-        - [ ]  Full Name
-        - [ ]  Program Name
+        - [x]  Program Name
         - [ ]  Operating Systems
         - [ ]  Install Location
-- [ ]  Handle inputs by renaming and editing files
+- [x]  Handle inputs by renaming and editing files
 
 
 &nbsp;
