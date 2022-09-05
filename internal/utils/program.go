@@ -9,13 +9,11 @@ import (
 	"path"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v47/github"
 	"github.com/lithammer/fuzzysearch/fuzzy"
@@ -187,12 +185,8 @@ func HandleFilePath(finalDir string, name string) {
 // CloneRepo clones a repo into the specified location.
 func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
-	progress := GitProgress{
-		Progress: 0,
-	}
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
-		Progress: progress,
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -348,7 +342,8 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
 	}
 }
 
-func CreateTemplateHelper(repo string) string { // Helper function to clone and create repo
+// CloneTemplate creates the template directory and clones the template repo into it.
+func CloneTemplate(repo string) {
 	// Get current directory
 	cwd, err := os.Getwd()
 	DieIfError(err, "Failed to get current directory.")
@@ -358,13 +353,20 @@ func CreateTemplateHelper(repo string) string { // Helper function to clone and 
 	err = os.Mkdir(installPath, 0755)
 	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
 	CloneRepo(installPath, "template") // Clone the template repo into the installPath
-	return installPath
-
 }
 
-// CreateTemplate creates a template repo for the repo name specified.
-func CreateTemplate(repo string, exec string) {
-	installPath := CreateTemplateHelper(repo)
+// GetTemplateDir gets the location of the template directory.
+func GetTemplateDir(repo string) string {
+	// Get current directory
+	cwd, err := os.Getwd()
+	DieIfError(err, "Failed to get current directory.")
+	installPath := path.Join(cwd, repo)
+	return installPath
+}
+
+// InitTemplate initializes a template repo for the repo name specified.
+func InitTemplate(repo string, exec string) {
+	installPath := GetTemplateDir(repo)
 	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
 	DieIfError(err, "Failed to open .catppuccin.yaml.")
 	defer ctprc.Close()
@@ -385,18 +387,3 @@ func CreateTemplate(repo string, exec string) {
 	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
 }
 
-type GitProgress struct {
-	Progress int
-}
-
-var re *regexp.Regexp = regexp.MustCompile(`Compressing objects:\s*(\d*)%`)
-
-func (g GitProgress) Write (p []byte) (n int, err error) {
-	data := string(p)
-	matches := re.FindStringSubmatch(data)
-	if len(matches) > 1 {
-		percentage, _ := strconv.Atoi(matches[1])
-		g.Progress = percentage
-	}
-	return len(p), err
-}

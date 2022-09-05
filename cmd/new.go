@@ -21,7 +21,7 @@ var newCmd = &cobra.Command{
 
 func handleArgs(args []string) {
 	if len(args) >= 1 {
-		utils.CreateTemplate(args[0], args[1])
+		utils.InitTemplate(args[0], args[1])
 	} else {
 		ui.Run()
 	}

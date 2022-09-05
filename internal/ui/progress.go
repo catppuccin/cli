@@ -1,52 +1,108 @@
 package ui
 
-// I'll work on this please but I need help with the io.writer function.
 import (
+	"fmt"
+	"regexp"
+	"strconv"
+	"time"
+
+	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
-	"io"
-	"time"
+	"github.com/go-git/go-git/v5"
 )
 
-const (
-	padding  = 2
-	maxWidth = 80
-)
+type progressMsg float64 // Progress 
 
-type ProgressParent struct {
-	progress progress.Model
+
+type GitProgress struct {
+	Progress int
 }
 
-type tickMsg time.Time
 
-func NewProgressParent() *ProgressParent {
-	prog := progress.New()
-	prog.Width = maxWidth
-	return &ProgressParent{progress: prog}
-}
-
-func (m ProgressParent) Init() tea.Cmd {
-	return nil
-}
-func (m ProgressParent) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
-	case tea.KeyMsg:
-		return m, tea.Quit
+func NewProgressBar() progressWrapper {
+	return progressWrapper{
+		progress: progress.New(),
 	}
-	return m, nil // Placeholder code forever
 }
 
-func (m ProgressParent) Write(io io.Writer) tea.Cmd {
-	var cmd tea.Cmd // Placeholder for now while I figure out this part.
-	return cmd
+// CloneRepo clones a repo into the specified location.
+func CloneRepo(stagePath string, repo string) string {
+	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
+	progress := GitProgress{
+		Progress: 0,
+	}
+	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
+		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
+		Progress: progress,
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	return stagePath
 }
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second*1, func(t time.Time) tea.Msg {
-		return tickMsg(t)
+
+func StartClone(repo string) tea.Cmd {
+	return func() tea.Msg {
+		CloneRepo(utils.GetTemplateDir(repo), "template")
+		return nil
+	}
+}
+
+// Regex to get the percentage in a subgroup
+var re *regexp.Regexp = regexp.MustCompile(`Compressing objects:\s*(\d*)%`)
+
+
+// Write intercepts the content and updates the percentage
+func (g GitProgress) Write (raw []byte) (n int, err error) {
+	data := string(raw)
+	matches := re.FindStringSubmatch(data)
+	if len(matches) > 1 {
+		percentage, _ := strconv.Atoi(matches[1])
+		g.Progress = percentage
+		p.Send(progressMsg(percentage/100)) // Send the progressMsg out
+	}
+	return len(raw), err
+}
+
+func finalPause() tea.Cmd {
+	return tea.Tick(time.Millisecond*750, func(_ time.Time) tea.Msg {
+		return nil
 	})
 }
 
-func (m ProgressParent) View() string {
-	// Implementation will come soon. Stay tuned.
-	return "" // Placeholder code for now.
+type progressWrapper struct {
+	progress progress.Model
+}
+
+func (m progressWrapper) Init() tea.Cmd {
+	return StartClone(RepoName)
+}
+
+func (m progressWrapper) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		return m, tea.Quit // Just quit
+	case progressMsg:
+		var cmds []tea.Cmd
+
+		if msg >= 1.0 {
+			cmds = append(cmds, finalPause())
+		}
+
+		cmds = append(cmds, m.progress.SetPercent(float64(msg))) // Set the progress
+		return m, tea.Batch(cmds...)
+	case progress.FrameMsg:
+		// Update bar
+		progressModel, cmd := m.progress.Update(msg)
+		m.progress = progressModel.(progress.Model)
+		return m, cmd
+	}
+	return m, nil
+}
+
+func (m progressWrapper) View() string {
+	return "\nDownloading...\n" +
+		m.progress.View() + "\n\n" +
+		"Press any key to quit"
 }

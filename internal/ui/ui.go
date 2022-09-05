@@ -6,9 +6,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var p *tea.Program
+
 func Run() {
 	// init models, we can reset them at any time anyway
-	models = []tea.Model{NewInitialModel(), NewExecModel(), NewSpinnerParent()}
+	models = []tea.Model{NewInitialModel(), NewExecModel(), NewProgressBar(), NewSpinnerParent()}
 	m := models[initialView]
 	p := tea.NewProgram(m)
 	if err := p.Start(); err != nil {
@@ -18,6 +20,8 @@ func Run() {
 		fmt.Println("Finished!")
 	}
 }
+
+
 
 // I put all the globals here :shrug:
 var (
@@ -33,7 +37,9 @@ var (
 const (
 	initialView = iota
 	execView
+	progressView
 	spinnerView
 )
 
 type errMsg error
+
