@@ -1,7 +1,6 @@
 package ui
 
 import (
-
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,7 +14,7 @@ type SpinnerParent struct {
 type spinnerMsg int
 
 func GetRepoName() tea.Msg {
-	utils.InitTemplate(RepoName, ExecName)
+	utils.InitTemplate(RepoName, ExecName, LinuxLoc, MacLoc, WindowsLoc)
 	return spinnerMsg(1)
 }
 

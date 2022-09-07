@@ -365,7 +365,7 @@ func GetTemplateDir(repo string) string {
 }
 
 // InitTemplate initializes a template repo for the repo name specified.
-func InitTemplate(repo string, exec string) {
+func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
 	installPath := GetTemplateDir(repo)
 	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
 	DieIfError(err, "Failed to open .catppuccin.yaml.")
@@ -378,12 +378,11 @@ func InitTemplate(repo string, exec string) {
 	catppuccin := structs.Catppuccinyaml{
 		Name:          repo,
 		Exec:          exec,
-		MacosLocation: "Applications/" + repo,
-		LinuxLocation: "~/.config/" + repo,
-		WinLocation:   "%appdata%/" + repo,
+		MacosLocation: macloc,
+		LinuxLocation: linuxloc,
+		WinLocation:   windowsloc,
 	}
 
 	err = ctp.Execute(ctprc, catppuccin)
 	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
 }
-
