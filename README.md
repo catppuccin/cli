@@ -42,8 +42,8 @@ It allows you to:
     - [x]  Theme Name
     - [ ]  Interactive ctprc builder
         - [x]  Program Name
-        - [ ]  Operating Systems
-        - [ ]  Install Location
+        - [x]  Operating Systems
+        - [x]  Install Location
 - [x]  Handle inputs by renaming and editing files
 
 
