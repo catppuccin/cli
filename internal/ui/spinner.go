@@ -14,6 +14,7 @@ type SpinnerParent struct {
 type spinnerMsg int
 
 func GetRepoName() tea.Msg {
+	utils.CloneTemplate(RepoName)
 	utils.InitTemplate(RepoName, ExecName, LinuxLoc, MacLoc, WindowsLoc)
 	return spinnerMsg(1)
 }

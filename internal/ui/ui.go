@@ -38,8 +38,8 @@ var (
 const (
 	initialView = iota
 	execView
-	spinnerView
 	installView
+	spinnerView
 )
 
 type errMsg error

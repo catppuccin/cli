@@ -2,10 +2,11 @@ package ui
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"strings"
 )
 
 var (
@@ -50,6 +51,7 @@ func NewInstallModel() InstallModel {
 	}
 	return m
 }
+
 func (m InstallModel) Init() tea.Cmd {
 	return textinput.Blink
 }
@@ -100,8 +102,9 @@ func (m InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd := m.updateInputs(msg)
 	return m, cmd
 }
+
 func (m *InstallModel) updateInputs(msg tea.Msg) tea.Cmd {
-	var cmds = make([]tea.Cmd, len(m.inputs))
+	cmds := make([]tea.Cmd, len(m.inputs))
 
 	for i := range m.inputs {
 		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
