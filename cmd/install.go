@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"runtime"
 )
 
@@ -61,6 +62,7 @@ func installer(packages []string) {
 	programs := []structs.Program{}
 	programLocations := []string{}
 	programNames := []string{}
+	comments := []string{}
 
 	for i := 0; i < len(success); i++ {
 		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.catppuccin.yaml"
@@ -101,18 +103,24 @@ func installer(packages []string) {
 				programs = append(programs, ctprc)
 				programLocations = append(programLocations, InstallDir)
 				programNames = append(programNames, success[i])
+				comments = append(comments, ctprc.Installation.Comments)
 			}
 		}
 	}
 	for i := 0; i < len(programs); i++ {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
-    programName := programNames[i]
-    installDir := utils.ShareDir() + programName
+		programName := programNames[i]
+		installDir := path.Join(utils.ShareDir(), programName)
+		//installDir := utils.ShareDir() + "/" + programName
 		baseDir := utils.CloneRepo(installDir, programName)
-    installLoc := programLocations[i]
+		installLoc := programLocations[i]
 		ctprc := programs[i]
 		//Symlink the repo
-    utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
+		utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
+		if comments[i] != "" {
+			//fmt.Printf("\nNote: %s", comments[i])
+			os.Stdout.WriteString("\nNote: " + comments[i])
+		}
 	}
-  // nya~
+	// nya~
 }

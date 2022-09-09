@@ -154,7 +154,7 @@ func HandleDirPath(finalDir string, name string) {
 	if PathExists(fullDir) {
 		fmt.Printf("Directory %s already exists.\nWould you like to move the directory?(y/N): ", fullDir)
 		if fmt.Scan(&resp); resp == "y" {
-			fmt.Println("\nReplacing directory...") // What have you done DUKKKKK???!!
+			fmt.Println("\nReplacing directory...")
 			prefix, suffix := path.Split(fullDir)
 			renamed := suffix + "-" + time.Now().Format("06-01-02")
 			renamed = path.Join(prefix, renamed)
@@ -248,7 +248,7 @@ func UpdateJSON() {
 	if err != nil {
 		fmt.Println("Failed to get repositories.")
 	} else {
-		fmt.Println("Recieved repositories. Caching!")
+		fmt.Println("Received repositories. Caching!")
 		themes := []structs.SearchEntry{}
 		for i := 0; i < len(repos); i++ {
 			repo := repos[i]

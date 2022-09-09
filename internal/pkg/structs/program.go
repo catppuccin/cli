@@ -45,6 +45,7 @@ type Installation struct {
 	To              string          `yaml:"to"`
 	OneFlavour      bool            `yaml:"one_flavour"`
 	Modes           []string        `yaml:"modes"`
+	Comments        string          `yaml:"comments"`
 }
 
 type Catppuccinyaml struct {
