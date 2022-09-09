@@ -1,0 +1,15 @@
+name: Build Docker image for ctp 
+
+on: [workflow_dispatch]
+
+jobs: 
+  build-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Dockerfile build 
+        uses: VaultVulp/gp-docker-action@1.2.0
+        with: 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ctp 
+          image-tag: latest 
