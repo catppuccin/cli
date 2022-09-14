@@ -183,7 +183,8 @@ func HandleFilePath(finalDir string, name string) {
 }
 
 // CloneRepo clones a repo into the specified location.
-func CloneRepo(stagePath string, repo string) string {
+func CloneRepo(repo string) string {
+	stagePath := path.Join(ShareDir(), repo)
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
