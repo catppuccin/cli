@@ -2,15 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"runtime"
-
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/spf13/cobra"
 )
 
 var Flavour string
@@ -112,14 +111,12 @@ func installer(packages []string) {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
 		programName := programNames[i]
 		installDir := path.Join(utils.ShareDir(), programName)
-		//installDir := utils.ShareDir() + "/" + programName
 		baseDir := utils.CloneRepo(installDir, programName)
 		installLoc := programLocations[i]
 		ctprc := programs[i]
 		//Symlink the repo
 		utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
 		if comments[i] != "" {
-			//fmt.Printf("\nNote: %s", comments[i])
 			os.Stdout.WriteString("\nNote: " + comments[i])
 		}
 	}
