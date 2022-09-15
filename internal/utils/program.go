@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
@@ -153,7 +154,7 @@ func HandleDirPath(finalDir string, name string) {
 	if PathExists(fullDir) {
 		fmt.Printf("Directory %s already exists.\nWould you like to move the directory?(y/N): ", fullDir)
 		if fmt.Scan(&resp); resp == "y" {
-			fmt.Println("\nReplacing directory...") // What have you done DUKKKKK???!!
+			fmt.Println("\nReplacing directory...")
 			prefix, suffix := path.Split(fullDir)
 			renamed := suffix + "-" + time.Now().Format("06-01-02")
 			renamed = path.Join(prefix, renamed)
@@ -182,17 +183,23 @@ func HandleFilePath(finalDir string, name string) {
 }
 
 // CloneRepo clones a repo into the specified location.
-func CloneRepo(repo string) string {
-	stagePath := path.Join(ShareDir(), repo)
+func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-		URL:      fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
-		Progress: os.Stdout,
+		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
 	return stagePath
+}
+
+// DieIfError kills the program if err is not nil.
+func DieIfError(err error, message string) {
+	if err != nil {
+		fmt.Println(message)
+		os.Exit(1)
+	}
 }
 
 // PullUpdates opens a git repo and pulls the latest changes.
@@ -241,7 +248,7 @@ func UpdateJSON() {
 	if err != nil {
 		fmt.Println("Failed to get repositories.")
 	} else {
-		fmt.Println("Recieved repositories. Caching!")
+		fmt.Println("Received repositories. Caching!")
 		themes := []structs.SearchEntry{}
 		for i := 0; i < len(repos); i++ {
 			repo := repos[i]
@@ -304,33 +311,78 @@ func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 
 // InstallLinks is a wrapper over MakeLinks that parses the mode and uses it to create the correct link, as specified by the ctprc.
 func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) {
-  if mode == "default" {
-    // Default mode, just run makeLinks
-    MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
-  } else {
-    // Mode code
-    modes := entry.Additional
-    modeEntry := modes[mode]
-    if modeEntry == nil {
-      fmt.Printf("Mode '%s' does not exist.\n", mode)
-    } else {
-      MakeLinks(baseDir, modeEntry, to, finalDir)
-    }
-  }
+	if mode == "default" {
+		// Default mode, just run makeLinks
+		MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
+	} else {
+		// Mode code
+		modes := entry.Additional
+		modeEntry := modes[mode]
+		if modeEntry == nil {
+			fmt.Printf("Mode '%s' does not exist.\n", mode)
+		} else {
+			MakeLinks(baseDir, modeEntry, to, finalDir)
+		}
+	}
 }
 
 // InstallFlavours is a wrapper for InstallLinks which takes the flavour and handles the install accordingly
 func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) {
-		switch flavour {
-      case "all":
-        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
-      case "latte":
-        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
-      case "frappe":
-        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
-      case "macchiato":
-        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
-      case "mocha":
-        InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
-    }
+	switch flavour {
+	case "all":
+		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
+	case "latte":
+		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
+	case "frappe":
+		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
+	case "macchiato":
+		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
+	case "mocha":
+		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
+	}
+}
+
+// CloneTemplate creates the template directory and clones the template repo into it.
+func CloneTemplate(repo string) {
+	// Get current directory
+	cwd, err := os.Getwd()
+	DieIfError(err, "Failed to get current directory.")
+
+	// Make project directory and clone
+	installPath := path.Join(cwd, repo)
+	err = os.Mkdir(installPath, 0755)
+	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
+	CloneRepo(installPath, "template") // Clone the template repo into the installPath
+}
+
+// GetTemplateDir gets the location of the template directory.
+func GetTemplateDir(repo string) string {
+	// Get current directory
+	cwd, err := os.Getwd()
+	DieIfError(err, "Failed to get current directory.")
+	installPath := path.Join(cwd, repo)
+	return installPath
+}
+
+// InitTemplate initializes a template repo for the repo name specified.
+func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
+	installPath := GetTemplateDir(repo)
+	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
+	DieIfError(err, "Failed to open .catppuccin.yaml.")
+	defer ctprc.Close()
+	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
+	DieIfError(err, "Failed to read .catppuccin.yaml.")
+
+	ctp, err := template.New("catppuccin").Parse(string(content))
+	DieIfError(err, "Failed to parse .catppuccin.yaml.")
+	catppuccin := structs.Catppuccinyaml{
+		Name:          repo,
+		Exec:          exec,
+		MacosLocation: macloc,
+		LinuxLocation: linuxloc,
+		WinLocation:   windowsloc,
+	}
+
+	err = ctp.Execute(ctprc, catppuccin)
+	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
 }
