@@ -47,12 +47,12 @@ func ShareDir() string {
 	if IsWindows() {
 		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
 	}
-	return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "share/catppuccin-cli")
+	return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "catppuccin-cli")
 }
 
 // UserHomeDir gets the user's home directory
 func UserHomeDir() string {
-	if runtime.GOOS == "windows" {
+	if IsWindows() {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
 		if home == "" {
 			home = os.Getenv("USERPROFILE")
@@ -69,7 +69,6 @@ func HandleDir(dir string) string {
 		dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
 		fmt.Printf(dir)
 	}
-	dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
 	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
 	appdata, _ := os.UserConfigDir()
 	dir = strings.Replace(dir, "%appdata%", appdata, -1)
