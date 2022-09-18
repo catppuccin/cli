@@ -14,7 +14,6 @@ func (r *Program) Marshal() ([]byte, error) {
 	return yaml.Marshal(r)
 }
 
-
 type Program struct {
 	AppName      string       `yaml:"app_name"`
 	BinaryName   string       `yaml:"binary_name"`
@@ -26,7 +25,6 @@ type InstallLocation struct {
 	Macos   string `yaml:"macos"`
 	Windows string `yaml:"windows"`
 }
-
 
 type Entry struct {
 	Default    []string            `yaml:"default"`
@@ -47,4 +45,13 @@ type Installation struct {
 	To              string          `yaml:"to"`
 	OneFlavour      bool            `yaml:"one_flavour"`
 	Modes           []string        `yaml:"modes"`
+	Comments        string          `yaml:"comments"`
+}
+
+type Catppuccinyaml struct {
+	Name          string
+	Exec          string
+	MacosLocation string
+	LinuxLocation string
+	WinLocation   string
 }
