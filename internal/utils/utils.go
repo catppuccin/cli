@@ -73,8 +73,11 @@ func HandleDir(dir string) string {
 	dir = strings.Replace(dir, "%appdata%", appdata, -1)
 	envar := string(envre.Find([]byte(dir)))
 	if envar != "" {
-		result := path.Join(GetEnv(envar[1:len(envar)-1], "/////////////"), "/") // Intentionally screws up the program if failed
-		envre.ReplaceAllString(dir, result)
+		result := GetEnv(envar[1:len(envar)-1], "/////////////") // Intentionally screws up the program if failed
+		if result[len(result)-1:] != "/" {
+			result += "/"
+		}
+		dir = envre.ReplaceAllString(dir, result)
 	}
 	return dir
 }
