@@ -65,16 +65,18 @@ func UserHomeDir() string {
 // HandleDir handles a directory, replacing certain parts with known attributes.
 func HandleDir(dir string) string {
 	usr, _ := user.Current()
-	if strings.Contains(dir, "%userprofile%") { // For programs which store config on per-user basis like vscode
-		dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
-		fmt.Printf(dir)
-	}
-	dir = strings.Replace(dir, "%userprofile", usr.HomeDir, -1)
+	envre, err := regexp.Compile(`\$([A-z0-9_\-]+)\/`) // Create the regex to detect environment variables
+	DieIfError(err, "Failed to compile environment checking regex. Try running again.")
+	dir = strings.Replace(dir, "%userprofile%", usr.HomeDir, -1)
 	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
 	appdata, _ := os.UserConfigDir()
 	dir = strings.Replace(dir, "%appdata%", appdata, -1)
+	envar := string(envre.Find([]byte(dir)))
+	if envar != "" {
+		result := path.Join(GetEnv(envar[1:len(envar)-1], "/////////////"), "/") // Intentionally screws up the program if failed
+		envre.ReplaceAllString(dir, result)
+	}
 	return dir
-
 }
 
 // MakeLink makes a symlink from a path to another path with a suffix.
