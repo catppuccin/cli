@@ -134,10 +134,11 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	// Iterate over links and use makeLink to make the links
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
+		linkInfo, _ := os.Stat(link)
 		// Check for a file extension; literally just looks for a "."
 		shortPath := re.FindString(link)
 		name := to
-		if strings.Contains(shortPath[2:], ".") {
+		if !linkInfo.IsDir() {
 			// Path is a file, handle that
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
