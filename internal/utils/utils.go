@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/go-git/go-git/v5"
@@ -104,7 +103,7 @@ func makeLink(from string, to string, name string) {
 		err := os.Symlink(from, path.Join(to, name)) /* Example:
 		 * (Folder)cin-cli/Helix/them
 		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuces/default
+		 * from: ~/.local/share/catppuccin-cli/default
 		 * to:   ~/.config/helix/
 		 * name: themes/
 		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
@@ -135,43 +134,51 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	// Iterate over links and use makeLink to make the links
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
-		// Use the regex to get the last part of the file URL and append it to the `to`
+		// Check for a file extension; literally just looks for a "."
 		shortPath := re.FindString(link)
 		name := to
 		if strings.Contains(shortPath[2:], ".") {
 			// Path is a file, handle that
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
+			// Just link the file
+			fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
+			// Use the name as name, the link as the from, and the finalDir as the to
+			makeLink(link, finalDir, name)
 		} else {
-			HandleDirPath(finalDir, name)
+			files := HandleDirPath(baseDir, links[i], finalDir, name)
+			MakeLinks(baseDir, files, to, finalDir)
 		}
-		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
-		// Use the name as name, the link as the from, and the finalDir as the to
-		makeLink(link, finalDir, name)
 	}
 }
 
 // HandleDirPath is a function to handle a directory when making a symlink
-func HandleDirPath(finalDir string, name string) {
-	// Check if dir to link already exists
-	fullDir := path.Join(finalDir, name)
-	var resp string
-	if PathExists(fullDir) {
-		fmt.Printf("Directory %s already exists.\nWould you like to move the directory?(y/N): ", fullDir)
-		if fmt.Scan(&resp); resp == "y" {
-			fmt.Println("\nReplacing directory...")
-			prefix, suffix := path.Split(fullDir)
-			renamed := suffix + "-" + time.Now().Format("06-01-02")
-			renamed = path.Join(prefix, renamed)
-			err := os.Rename(fullDir, renamed)
-			if err != nil {
-				fmt.Println("Failed to move directory. You may have to rerun this command with elevated permissions, or the old directory may already exist.")
-				fmt.Printf("(Error: %s)\n", err)
-			}
-		} else {
-			os.Exit(1)
-		}
+func HandleDirPath(baseDir string, link string, finalDir string, name string) []string {
+	// The link directory
+	from := path.Join(baseDir, link)
+	files, err := OSReadDir(from)	
+	DieIfError(err, "Failed to read directory while parsing for symlinking.")
+	for i := 0; i < len(files); i++ {
+		files[i] = path.Join(link, files[i])
 	}
+	return files
+}
+
+func OSReadDir(root string) ([]string, error) {
+    var files []string
+    f, err := os.Open(root)
+    if err != nil {
+        return files, err
+    }
+    fileInfo, err := f.Readdir(-1)
+    f.Close()
+    if err != nil {
+        return files, err
+    }
+    for _, file := range fileInfo {
+        files = append(files, file.Name())
+    }
+    return files, nil
 }
 
 // HandleFilePath handles files that are made with symlinks
