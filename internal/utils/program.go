@@ -78,7 +78,8 @@ func HandleDir(dir string) string {
 }
 
 // MakeLink makes a symlink from a path to another path with a suffix.
-func makeLink(from string, to string, name string) {
+func makeLink(from string, to string, name string) string {
+	symfile := path.Join(to, name)
 	if to[len(to)-1:] != "/" {
 		fmt.Printf("\n'%s' is not a directory.", to)
 		os.Exit(1)
@@ -90,13 +91,13 @@ func makeLink(from string, to string, name string) {
 			fmt.Printf("Failed to remove symlink. (Error: %s)\n", err)
 			os.Exit(1)
 		}
-		err = os.Symlink(from, path.Join(to, name))
+		err = os.Symlink(from, symfile)
 		if err != nil {
 			fmt.Println(err)
 		}
 	} else {
 		// Symlink the directory
-		err := os.Symlink(from, path.Join(to, name)) /* Example:
+		err := os.Symlink(from, symfile) /* Example:
 		 * (Folder)cin-cli/Helix/them
 		 * Symlink themes/default into ~/.config/helix/themes
 		 * from: ~/.local/share/catppuces/default
@@ -114,10 +115,11 @@ func makeLink(from string, to string, name string) {
 			fmt.Println(err)
 		}
 	}
+	return symfile
 }
 
 // MakeLinks loops through a list and converts its attributes into arguments for MakeLink.
-func MakeLinks(baseDir string, links []string, to string, finalDir string) {
+func MakeLinks(baseDir string, links []string, to string, finalDir string) []string {
 	/* An explanation of these ambiguous names
 	 * baseDir  - the directory in which the repo was staged, returned by cloneRepo
 	 * links    - a list of files that we loop through to make links of
@@ -128,6 +130,7 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 	// Regex last-item match
 	re, _ := regexp.Compile(`\/[^\/]*$`)
 	// Iterate over links and use makeLink to make the links
+	var symfiles []string
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
 		// Use the regex to get the last part of the file URL and append it to the `to`
@@ -142,8 +145,9 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) {
 		}
 		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
 		// Use the name as name, the link as the from, and the finalDir as the to
-		makeLink(link, finalDir, name)
+		symfiles = append(symfiles, makeLink(link, finalDir, name))
 	}
+	return symfiles
 }
 
 // HandleDirPath is a function to handle a directory when making a symlink
@@ -310,36 +314,38 @@ func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 }
 
 // InstallLinks is a wrapper over MakeLinks that parses the mode and uses it to create the correct link, as specified by the ctprc.
-func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) {
+func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) []string {
 	if mode == "default" {
 		// Default mode, just run makeLinks
-		MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
-	} else {
-		// Mode code
-		modes := entry.Additional
-		modeEntry := modes[mode]
-		if modeEntry == nil {
-			fmt.Printf("Mode '%s' does not exist.\n", mode)
-		} else {
-			MakeLinks(baseDir, modeEntry, to, finalDir)
-		}
+		return MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
 	}
+	// Mode code
+	modes := entry.Additional
+	modeEntry := modes[mode]
+	if modeEntry == nil {
+		fmt.Printf("Mode '%s' does not exist.\n", mode)
+	} else {
+		return MakeLinks(baseDir, modeEntry, to, finalDir)
+	}
+	return nil
 }
 
 // InstallFlavours is a wrapper for InstallLinks which takes the flavour and handles the install accordingly
-func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) {
+func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) []string {
+	var res []string
 	switch flavour {
 	case "all":
-		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
+		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
 	case "latte":
-		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
+		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
 	case "frappe":
-		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
+		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
 	case "macchiato":
-		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
+		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
 	case "mocha":
-		InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
+		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
 	}
+	return res
 }
 
 // CloneTemplate creates the template directory and clones the template repo into it.
