@@ -53,6 +53,7 @@ func removeInstalled(packages []string) {
 			fileLoc = utils.HandleDir(ctprc.Installation.InstallLocation.Macos)
 		}
 		finalDir := path.Join(fileLoc, ctprc.Installation.To) // Sets the final direction for installation
+		// repoDir := path.Join(utils.ShareDir(), packages[i])
 		_, err = os.Lstat(finalDir)                           // Check for existence of the file and remove it.
 		if err != nil {
 			fmt.Printf("Could not find %s.", finalDir)
