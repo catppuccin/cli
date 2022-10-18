@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io"
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -13,6 +13,8 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/go-git/go-git/v5"
@@ -115,8 +117,7 @@ func makeLink(from string, to string, name string) {
 		 * to:   ~/.config/helix/
 		 * name: themes/catppuccin_mocha.toml
 		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */
-		if err != nil {
+		 */if err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -190,7 +191,7 @@ func HandleFilePath(finalDir string, name string) {
 	fileFolder, _ := path.Split(name)
 	fullDir := path.Join(finalDir, fileFolder)
 	if !PathExists(fullDir) {
-		err := os.Mkdir(fullDir, 0755)
+		err := os.Mkdir(fullDir, 0o755)
 		if err != nil {
 			fmt.Printf("Failed to create parent directory %s", fullDir)
 		}
@@ -280,7 +281,7 @@ func UpdateJSON() {
 		if err != nil {
 			fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
 		} else {
-			os.WriteFile(dir, body, 0644)
+			os.WriteFile(dir, body, 0o644)
 		}
 	}
 }
@@ -364,8 +365,8 @@ func CloneTemplate(repo string) {
 
 	// Make project directory and clone
 	installPath := path.Join(cwd, repo)
-	err = os.Mkdir(installPath, 0755)
-	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
+	err = os.Mkdir(installPath, 0o755)
+	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s", repo))
 	CloneRepo(installPath, "template") // Clone the template repo into the installPath
 }
 
@@ -381,7 +382,7 @@ func GetTemplateDir(repo string) string {
 // InitTemplate initializes a template repo for the repo name specified.
 func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
 	installPath := GetTemplateDir(repo)
-	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
+	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0o644)
 	DieIfError(err, "Failed to open .catppuccin.yaml.")
 	defer ctprc.Close()
 	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
@@ -424,14 +425,14 @@ func MakeFlavour(packages []string, flavour string) {
 			}
 			flavours := []structs.AppFlavour{}
 			flavours = append(flavours, udata)
-			//for i := 0; i <= len(flavours); i++ {
+			// for i := 0; i <= len(flavours); i++ {
 			if flavours[i].InstalledFlavour.Flavour == flavourrc.InstalledFlavour.Flavour {
 				fmt.Printf("Flavour %v already exists for %v\n", flavourrc.InstalledFlavour.Flavour, flavourrc.AppName)
 				os.Exit(1)
 			}
 			//}
 		}
-		file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644) // Open the file in append and create if doesn't exist.
+		file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644) // Open the file in append and create if doesn't exist.
 		if err != nil {
 			fmt.Printf("error: %s", err)
 		}
