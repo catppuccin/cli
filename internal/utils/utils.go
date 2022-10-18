@@ -212,8 +212,7 @@ func CloneRepo(stagePath string, repo string) string {
 // DieIfError kills the program if err is not nil.
 func DieIfError(err error, message string) {
 	if err != nil {
-		fmt.Println(message)
-		os.Exit(1)
+		log.Fatalf("%s.\nFailed with error: %v", message, err)
 	}
 }
 
