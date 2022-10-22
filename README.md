@@ -41,7 +41,7 @@ It allows you to:
 - [ ] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
 - [ ] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
 - [ ] Better error handling overall 
-- [ ] Use to `gofmt` from now on. 
+- [ ] Use `gofmt` from now on. 
 - [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
 
 &nbsp;
