@@ -35,17 +35,14 @@ It allows you to:
 ## Note 
 - You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
 
-## Checklist 
-- [x]  Clone Template Repo
-- [x]  Interactive Setup
-- [ ]  Custom Bubbletea UI
-    - [x]  Theme Name
-    - [ ]  Interactive ctprc builder
-        - [x]  Program Name
-        - [x]  Operating Systems
-        - [x]  Install Location
-- [x]  Handle inputs by renaming and editing files
-
+## TODO
+- [ ] Hooks 
+- [ ] Command hooks 
+- [ ] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
+- [ ] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
+- [ ] Better error handling overall 
+- [ ] Use to `gofmt` from now on. 
+- [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
 
 &nbsp;
 
