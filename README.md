@@ -43,6 +43,10 @@ It allows you to:
 - [ ] Better error handling overall 
 - [ ] Use `gofmt` from now on. 
 - [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
+- [ ] Refactoring: 
+  - [ ] Move `cmd` to `internal`
+  - [ ] Move `main.go` to `cmd/ctp` => Reason: Check #25
+
 
 &nbsp;
 
