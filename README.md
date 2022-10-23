@@ -45,7 +45,7 @@ It allows you to:
 - [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
 - [ ] Refactoring: 
   - [ ] Move `cmd` to `internal`
-  - [ ] Move `main.go` to `cmd/ctp` => Reason: Check #25
+  - [ ] Move `main.go` to `cmd/ctp` => Reason: Check [#25](https://github.com/catppuccin/cli/issues/25)
 
 
 &nbsp;
