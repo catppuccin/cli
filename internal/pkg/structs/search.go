@@ -11,12 +11,10 @@ func UnmarshalSearch(data []byte) (SearchRes, error) {
 	return s, err
 }
 
-
-
 type SearchRes []SearchEntry
 
 type SearchEntry struct {
-	Name     string   `json:"name"`
-	Stars    int      `json:"stars"`
-	Topics   []string `json:"topics"`
+	Name   string   `json:"name"`
+	Stars  int      `json:"stars"`
+	Topics []string `json:"topics"`
 }

@@ -65,7 +65,8 @@ func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
 			RepoName = strings.TrimSpace(m.textInput.Value()) // QOL addition to remove spaces so that the directory formed is `helix` and
 			// not `helix\ /`
-			return models[initialView+1], models[initialView+1].Init()
+			m := NewExecModel(strings.ToLower(RepoName))
+			return m, m.Init()
 		}
 
 	case errMsg:
