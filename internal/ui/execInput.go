@@ -10,15 +10,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-
 type ExecModel struct {
 	textInput textinput.Model
 	err       error
 }
 
-func NewExecModel() ExecModel {
+func NewExecModel(p string) ExecModel {
 	ti := textinput.New()
-	ti.Placeholder = "Helix"
+	ti.Placeholder = p
 	ti.Focus()
 	ti.CharLimit = 256
 	ti.Width = 20
@@ -33,7 +32,6 @@ func (m ExecModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-
 func (m ExecModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -46,7 +44,11 @@ func (m ExecModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// save value to global so it doesn't get lost
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
 			ExecName = m.textInput.Value()
-			return models[execView+1], models[execView+1].Init()
+			if ExecName == "" {
+				ExecName = m.textInput.Placeholder
+			}
+			m := NewInstallModel(m.textInput.Placeholder)
+			return m, m.Init()
 		}
 
 	case errMsg:

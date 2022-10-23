@@ -26,7 +26,7 @@ type InstallModel struct {
 	cursorMode textinput.CursorMode
 }
 
-func NewInstallModel() InstallModel {
+func NewInstallModel(p string) InstallModel {
 	m := InstallModel{
 		inputs: make([]textinput.Model, 3),
 	}
@@ -38,14 +38,14 @@ func NewInstallModel() InstallModel {
 
 		switch i {
 		case 0:
-			t.Placeholder = "~/.config/helix"
+			t.Placeholder = "~/.config/" + p
 			t.Focus()
 			t.PromptStyle = focusedStyle
 			t.TextStyle = focusedStyle
 		case 1:
-			t.Placeholder = "~/.config/helix"
+			t.Placeholder = "~/.config/" + p
 		case 2:
-			t.Placeholder = "%appdata%/helix"
+			t.Placeholder = "%appdata%/" + p
 		}
 		m.inputs[i] = t
 	}
@@ -68,9 +68,19 @@ func (m InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				LinuxLoc = m.inputs[0].Value()
+				if LinuxLoc == "" {
+					LinuxLoc = m.inputs[0].Placeholder
+				}
 				MacLoc = m.inputs[1].Value()
+				if MacLoc == "" {
+					MacLoc = m.inputs[1].Placeholder
+				}
 				WindowsLoc = m.inputs[2].Value()
-				return models[installView+1], models[installView+1].Init()
+				if WindowsLoc == "" {
+					WindowsLoc = m.inputs[2].Placeholder
+				}
+				m := NewSpinnerParent()
+				return m, m.Init()
 			}
 
 			if s == "up" || s == "shift+tab" {
