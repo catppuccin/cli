@@ -44,6 +44,9 @@ func (m ExecModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// save value to global so it doesn't get lost
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
 			ExecName = m.textInput.Value()
+			if ExecName == "" {
+				ExecName = m.textInput.Placeholder
+			}
 			m := NewInstallModel(m.textInput.Placeholder)
 			return m, m.Init()
 		}

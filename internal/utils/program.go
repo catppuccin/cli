@@ -74,7 +74,6 @@ func HandleDir(dir string) string {
 	appdata, _ := os.UserConfigDir()
 	dir = strings.Replace(dir, "%appdata%", appdata, -1)
 	return dir
-
 }
 
 // MakeLink makes a symlink from a path to another path with a suffix.
@@ -109,8 +108,7 @@ func makeLink(from string, to string, name string) {
 		 * to:   ~/.config/helix/
 		 * name: themes/catppuccin_mocha.toml
 		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */
-		if err != nil {
+		 */if err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -175,7 +173,7 @@ func HandleFilePath(finalDir string, name string) {
 	fileFolder, _ := path.Split(name)
 	fullDir := path.Join(finalDir, fileFolder)
 	if !PathExists(fullDir) {
-		err := os.Mkdir(fullDir, 0755)
+		err := os.Mkdir(fullDir, 0o755)
 		if err != nil {
 			fmt.Printf("Failed to create parent directory %s", fullDir)
 		}
@@ -266,7 +264,7 @@ func UpdateJSON() {
 		if err != nil {
 			fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
 		} else {
-			os.WriteFile(dir, body, 0644)
+			os.WriteFile(dir, body, 0o644)
 		}
 	}
 }
@@ -350,7 +348,7 @@ func CloneTemplate(repo string) {
 
 	// Make project directory and clone
 	installPath := path.Join(cwd, repo)
-	err = os.Mkdir(installPath, 0755)
+	err = os.Mkdir(installPath, 0o755)
 	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
 	CloneRepo(installPath, "template") // Clone the template repo into the installPath
 }
@@ -367,11 +365,11 @@ func GetTemplateDir(repo string) string {
 // InitTemplate initializes a template repo for the repo name specified.
 func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
 	installPath := GetTemplateDir(repo)
-	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
-	DieIfError(err, "Failed to open .catppuccin.yaml.")
-	defer ctprc.Close()
 	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
 	DieIfError(err, "Failed to read .catppuccin.yaml.")
+	ctprc, err := os.Create(path.Join(installPath, ".catppuccin.yaml"))
+	DieIfError(err, "Failed to open .catppuccin.yaml.")
+	defer ctprc.Close()
 
 	ctp, err := template.New("catppuccin").Parse(string(content))
 	DieIfError(err, "Failed to parse .catppuccin.yaml.")

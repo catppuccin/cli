@@ -68,8 +68,17 @@ func (m InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				LinuxLoc = m.inputs[0].Value()
+				if LinuxLoc == "" {
+					LinuxLoc = m.inputs[0].Placeholder
+				}
 				MacLoc = m.inputs[1].Value()
+				if MacLoc == "" {
+					MacLoc = m.inputs[1].Placeholder
+				}
 				WindowsLoc = m.inputs[2].Value()
+				if WindowsLoc == "" {
+					WindowsLoc = m.inputs[2].Placeholder
+				}
 				m := NewSpinnerParent()
 				return m, m.Init()
 			}
