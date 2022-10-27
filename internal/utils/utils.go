@@ -1,85 +1,85 @@
 package utils
 
 import (
-  "context"
-  "encoding/json"
-  "fmt"
-  "gopkg.in/yaml.v3"
-  "os"
-  "os/user"
-  "path"
-  "regexp"
-  "runtime"
-  "strings"
-  "text/template"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"os/user"
+	"path"
+	"regexp"
+	"runtime"
+	"strings"
+	"text/template"
 
-  "github.com/catppuccin/cli/internal/pkg/structs"
-  "github.com/go-git/go-git/v5"
-  "github.com/google/go-github/v47/github"
-  "github.com/lithammer/fuzzysearch/fuzzy"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/go-git/go-git/v5"
+	"github.com/google/go-github/v47/github"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 // GetEnv gets an environment variable.
 // If not defined, it gets the fallback.
 func GetEnv(lookup string, fallback string) string {
-  if res, ok := os.LookupEnv(lookup); ok {
-    return res
-  }
-  return fallback
+	if res, ok := os.LookupEnv(lookup); ok {
+		return res
+	}
+	return fallback
 }
 
 // IsWindows checks if OS is Windows
 func IsWindows() bool {
-  return runtime.GOOS == "windows"
+	return runtime.GOOS == "windows"
 }
 
 // PathExists checks if a path exists
 func PathExists(path string) bool {
-  _, exists := os.Stat(path)
-  if os.IsNotExist(exists) {
-    return false
-  }
-  return true
+	_, exists := os.Stat(path)
+	if os.IsNotExist(exists) {
+		return false
+	}
+	return true
 }
 
 // ShareDir generates the share directory for the cli.
 func ShareDir() string {
-  if IsWindows() {
-    return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
-  }
-  return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "share/catppuccin-cli")
+	if IsWindows() {
+		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
+	}
+	return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "share/catppuccin-cli")
 }
 
 // UserHomeDir gets the user's home directory
 func UserHomeDir() string {
-  if runtime.GOOS == "windows" {
-    home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-    if home == "" {
-      home = os.Getenv("USERPROFILE")
-    }
-    return home
-  }
-  return os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }
 
 // HandleDir handles a directory, replacing certain parts with known attributes.
 func HandleDir(dir string) string {
-  usr, _ := user.Current()
-  envre, err := regexp.Compile(`\$([A-z0-9_\-]+)\/`) // Create the regex to detect environment variables
-  DieIfError(err, "Failed to compile environment checking regex. Try running again.")
-  dir = strings.Replace(dir, "%userprofile%", usr.HomeDir, -1)
-  dir = strings.Replace(dir, "~", usr.HomeDir, -1)
-  appdata, _ := os.UserConfigDir()
-  dir = strings.Replace(dir, "%appdata%", appdata, -1)
-  envar := string(envre.Find([]byte(dir)))
-  if envar != "" {
-    result := GetEnv(envar[1:len(envar)-1], "/////////////") // Intentionally screws up the program if failed
-    if result[len(result)-1:] != "/" {
-      result += "/"
-    }
-    dir = envre.ReplaceAllString(dir, result)
-  }
-  return dir
+	usr, _ := user.Current()
+	envre, err := regexp.Compile(`\$([A-z0-9_\-]+)\/`) // Create the regex to detect environment variables
+	DieIfError(err, "Failed to compile environment checking regex. Try running again.")
+	dir = strings.Replace(dir, "%userprofile%", usr.HomeDir, -1)
+	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
+	appdata, _ := os.UserConfigDir()
+	dir = strings.Replace(dir, "%appdata%", appdata, -1)
+	envar := string(envre.Find([]byte(dir)))
+	if envar != "" {
+		result := GetEnv(envar[1:len(envar)-1], "/////////////") // Intentionally screws up the program if failed
+		if result[len(result)-1:] != "/" {
+			result += "/"
+		}
+		dir = envre.ReplaceAllString(dir, result)
+	}
+	return dir
 }
 
 // MakeLink makes a symlink from a path to another path with a suffix.
@@ -120,6 +120,7 @@ func makeLink(from string, to string, name string) string {
 			fmt.Println(err)
 		}
 	}
+	fmt.Printf("Returning symfile from makeLink: %s\n", symfile)
 	return symfile
 }
 
@@ -146,187 +147,193 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
 		} else {
-			HandleDirPath(finalDir, name)
+			HandleDirPath(baseDir, links[i], finalDir, name)
 		}
 		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
 		// Use the name as name, the link as the from, and the finalDir as the to
 		symfiles = append(symfiles, makeLink(link, finalDir, name))
 	}
+	fmt.Printf("Returning symfiles from MakeLinks: %s\n", symfiles)
 	return symfiles
 }
 
 // HandleDirPath is a function to handle a directory when making a symlink
 func HandleDirPath(baseDir string, link string, finalDir string, name string) []string {
-  // The link directory
-  from := path.Join(baseDir, link)
-  files, err := OSReadDir(from)
-  DieIfError(err, "Failed to read directory while parsing for symlinking.")
-  for i := 0; i < len(files); i++ {
-    files[i] = path.Join(link, files[i])
-  }
-  return files
+	// The link directory
+	from := path.Join(baseDir, link)
+	fmt.Println(from)
+	files, err := OSReadDir(from)
+	DieIfError(err, "Failed to read directory while parsing for symlinking.")
+	if err != nil {
+		fmt.Printf("\nError is: %s\n", err)
+	}
+	for i := 0; i < len(files); i++ {
+		files[i] = path.Join(link, files[i])
+	}
+	return files
 }
 
 func OSReadDir(root string) ([]string, error) {
-  var files []string
-  f, err := os.Open(root)
-  if err != nil {
-    return files, err
-  }
-  fileInfo, err := f.Readdir(-1)
-  f.Close()
-  if err != nil {
-    return files, err
-  }
-  for _, file := range fileInfo {
-    files = append(files, file.Name())
-  }
-  return files, nil
+	var files []string
+	f, err := os.Open(root)
+	if err != nil {
+		return files, err
+	}
+	fileInfo, err := f.Readdir(-1)
+	f.Close()
+	if err != nil {
+		return files, err
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return files, nil
 }
 
 // HandleFilePath handles files that are made with symlinks
 func HandleFilePath(finalDir string, name string) {
-  // Check if dir to link already exists
-  fileFolder, _ := path.Split(name)
-  fullDir := path.Join(finalDir, fileFolder)
-  if !PathExists(fullDir) {
-    err := os.Mkdir(fullDir, 0755)
-    if err != nil {
-      fmt.Printf("Failed to create parent directory %s", fullDir)
-    }
-  }
+	// Check if dir to link already exists
+	fileFolder, _ := path.Split(name)
+	fullDir := path.Join(finalDir, fileFolder)
+	if !PathExists(fullDir) {
+		err := os.Mkdir(fullDir, 0755)
+		if err != nil {
+			fmt.Printf("Failed to create parent directory %s", fullDir)
+		}
+	}
 }
 
 // CloneRepo clones a repo into the specified location.
 func CloneRepo(stagePath string, repo string) string {
-  org := GetEnv("ORG_OVERRIDE", "catppuccin")
-  _, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-    URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
-  })
-  if err != nil {
-    fmt.Println(err)
-  }
-  return stagePath
+	org := GetEnv("ORG_OVERRIDE", "catppuccin")
+	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
+		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	return stagePath
 }
 
 // DieIfError kills the program if err is not nil.
 func DieIfError(err error, message string) {
-  if err != nil {
-    fmt.Println(message)
-    os.Exit(1)
-  }
+	if err != nil {
+		fmt.Println(message)
+		os.Exit(1)
+	}
 }
 
 // PullUpdates opens a git repo and pulls the latest changes.
 func PullUpdates(repo string) {
-  // Repo should be a valid folder, so now we'll open the .git
-  r, err := git.PlainOpen(repo) // Open new repo targeting the .git folder
-  if err != nil {
-    fmt.Printf("Error opening repo folder: %s\n", err)
-  } else {
-    // Get working directory
-    w, err := r.Worktree()
-    if err != nil {
-      fmt.Printf("Error getting working directory: %s\n", err)
-    } else {
-      // Pull the latest changes from origin
-      fmt.Printf("Pulling latest changes for %s...\n", repo)
-      err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-      if err != nil {
-        fmt.Printf("Failed to pull updates: %s\n", err)
-      }
-    }
-  }
+	// Repo should be a valid folder, so now we'll open the .git
+	r, err := git.PlainOpen(repo) // Open new repo targeting the .git folder
+	if err != nil {
+		fmt.Printf("Error opening repo folder: %s\n", err)
+	} else {
+		// Get working directory
+		w, err := r.Worktree()
+		if err != nil {
+			fmt.Printf("Error getting working directory: %s\n", err)
+		} else {
+			// Pull the latest changes from origin
+			fmt.Printf("Pulling latest changes for %s...\n", repo)
+			err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+			if err != nil {
+				fmt.Printf("Failed to pull updates: %s\n", err)
+			}
+		}
+	}
 }
 
 // ListContains checks if a list of strings contains a string
 func ListContains(list []string, contains string) bool {
-  for i := 0; i < len(list); i++ {
-    if list[i] == contains {
-      return true
-    }
-  }
-  return false
+	for i := 0; i < len(list); i++ {
+		if list[i] == contains {
+			return true
+		}
+	}
+	return false
 }
 
 // UpdateJSON makes a search request for all Catppuccin repos and caches them.
 func UpdateJSON() {
-  dir := path.Join(ShareDir(), "repos.json") // Set the staging directory plus the file name
-  org := GetEnv("ORG_OVERRIDE", "catppuccin")
-  client := github.NewClient(nil)
+	dir := path.Join(ShareDir(), "repos.json") // Set the staging directory plus the file name
+	org := GetEnv("ORG_OVERRIDE", "catppuccin")
+	client := github.NewClient(nil)
 
-  // Get all the Catppuccin repositories
-  opt := &github.RepositoryListByOrgOptions{Type: "public"} // Get all the repositories
-  repos, _, err := client.Repositories.ListByOrg(context.Background(), org, opt)
+	// Get all the Catppuccin repositories
+	opt := &github.RepositoryListByOrgOptions{Type: "public"} // Get all the repositories
+	repos, _, err := client.Repositories.ListByOrg(context.Background(), org, opt)
 
-  // Handle errors
-  if err != nil {
-    fmt.Println("Failed to get repositories.")
-  } else {
-    fmt.Println("Received repositories. Caching!")
-    themes := []structs.SearchEntry{}
-    for i := 0; i < len(repos); i++ {
-      repo := repos[i]
-      if !ListContains(repo.Topics, "catppuccin-meta") { // Repo does not contain catppuccin-meta topic
-        // Append search result
-        theme := structs.SearchEntry{
-          Name:   repo.GetName(),
-          Stars:  repo.GetStargazersCount(),
-          Topics: repo.Topics,
-        }
-        themes = append(themes, theme)
-      }
-    }
-    body, err := json.Marshal(themes)
-    if err != nil {
-      fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
-    } else {
-      os.WriteFile(dir, body, 0644)
-    }
-  }
+	// Handle errors
+	if err != nil {
+		fmt.Println("Failed to get repositories.")
+	} else {
+		fmt.Println("Received repositories. Caching!")
+		themes := []structs.SearchEntry{}
+		for i := 0; i < len(repos); i++ {
+			repo := repos[i]
+			if !ListContains(repo.Topics, "catppuccin-meta") { // Repo does not contain catppuccin-meta topic
+				// Append search result
+				theme := structs.SearchEntry{
+					Name:   repo.GetName(),
+					Stars:  repo.GetStargazersCount(),
+					Topics: repo.Topics,
+				}
+				themes = append(themes, theme)
+			}
+		}
+		body, err := json.Marshal(themes)
+		if err != nil {
+			fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
+		} else {
+			os.WriteFile(dir, body, 0644)
+		}
+	}
 }
 
 // CheckBetter checks if better is greater than check. If it is, it returns better, otherwise it returns check. It also returns a BoolAnd of checkbetter and if better > check.
 func CheckBetter(check int, better int, checkbetter bool) (int, bool) {
-  if better > check {
-    return better, BoolAnd(true, checkbetter)
-  }
-  return check, BoolAnd(false, checkbetter)
+	if better > check {
+		return better, BoolAnd(true, checkbetter)
+	}
+	return check, BoolAnd(false, checkbetter)
 }
 
 // BoolAnd uses booleans in an AND operator
 func BoolAnd(first bool, second bool) bool {
-  if first || second {
-    return true
-  }
-  return false
+	if first || second {
+		return true
+	}
+	return false
 }
 
 // SearchRepos searches through a SearchRes for the best match
 func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
-  var best structs.SearchEntry
-  bestScore := -1000
-  for i := 0; i < len(repos); i++ {
-    repo := repos[i]
-    better := false
-    rank := fuzzy.RankMatch(term, repo.Name)
-    bestScore, better = CheckBetter(bestScore, rank, better) // Sets the new best score and also tells if if new term is better
-    for e := 0; e < len(repo.Topics); e++ {
-      topic := repo.Topics[e]
-      rank = fuzzy.RankMatch(term, topic)
-      bestScore, better = CheckBetter(bestScore, rank, better) // Basically what this does is goes and tells us the best match of the topic, and sets that score in bestScore.
-      // If better is true, best becomes this repo. Just trust me on this. Just trust me on this.
-    }
-    if better {
-      best = repo
-    }
-  }
-  return best // Return the best match
+	var best structs.SearchEntry
+	bestScore := -1000
+	for i := 0; i < len(repos); i++ {
+		repo := repos[i]
+		better := false
+		rank := fuzzy.RankMatch(term, repo.Name)
+		bestScore, better = CheckBetter(bestScore, rank, better) // Sets the new best score and also tells if if new term is better
+		for e := 0; e < len(repo.Topics); e++ {
+			topic := repo.Topics[e]
+			rank = fuzzy.RankMatch(term, topic)
+			bestScore, better = CheckBetter(bestScore, rank, better) // Basically what this does is goes and tells us the best match of the topic, and sets that score in bestScore.
+			// If better is true, best becomes this repo. Just trust me on this. Just trust me on this.
+		}
+		if better {
+			best = repo
+		}
+	}
+	return best // Return the best match
 }
 
 // InstallLinks is a wrapper over MakeLinks that parses the mode and uses it to create the correct link, as specified by the ctprc.
 func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) []string {
 	if mode == "default" {
+		fmt.Printf("Returning mode from InstallLinks: %s", mode)
 		// Default mode, just run makeLinks
 		return MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
 	}
@@ -336,6 +343,7 @@ func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir strin
 	if modeEntry == nil {
 		fmt.Printf("Mode '%s' does not exist.\n", mode)
 	} else {
+		fmt.Printf("Returning from InstallLinks when the modes are not nil")
 		return MakeLinks(baseDir, modeEntry, to, finalDir)
 	}
 	return nil
@@ -356,78 +364,104 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
 	case "mocha":
 		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
 	}
+	fmt.Printf("Returning res from InstallFlavours: %s", res)
 	return res
 }
 
 // CloneTemplate creates the template directory and clones the template repo into it.
 func CloneTemplate(repo string) {
-  // Get current directory
-  cwd, err := os.Getwd()
-  DieIfError(err, "Failed to get current directory.")
+	// Get current directory
+	cwd, err := os.Getwd()
+	DieIfError(err, "Failed to get current directory.")
 
-  // Make project directory and clone
-  installPath := path.Join(cwd, repo)
-  err = os.Mkdir(installPath, 0755)
-  DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
-  CloneRepo(installPath, "template") // Clone the template repo into the installPath
+	// Make project directory and clone
+	installPath := path.Join(cwd, repo)
+	err = os.Mkdir(installPath, 0755)
+	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
+	CloneRepo(installPath, "template") // Clone the template repo into the installPath
 }
 
 // GetTemplateDir gets the location of the template directory.
 func GetTemplateDir(repo string) string {
-  // Get current directory
-  cwd, err := os.Getwd()
-  DieIfError(err, "Failed to get current directory.")
-  installPath := path.Join(cwd, repo)
-  return installPath
+	// Get current directory
+	cwd, err := os.Getwd()
+	DieIfError(err, "Failed to get current directory.")
+	installPath := path.Join(cwd, repo)
+	return installPath
 }
 
 // InitTemplate initializes a template repo for the repo name specified.
 func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
-  installPath := GetTemplateDir(repo)
-  ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
-  DieIfError(err, "Failed to open .catppuccin.yaml.")
-  defer ctprc.Close()
-  content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
-  DieIfError(err, "Failed to read .catppuccin.yaml.")
+	installPath := GetTemplateDir(repo)
+	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
+	DieIfError(err, "Failed to open .catppuccin.yaml.")
+	defer ctprc.Close()
+	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
+	DieIfError(err, "Failed to read .catppuccin.yaml.")
 
-  ctp, err := template.New("catppuccin").Parse(string(content))
-  DieIfError(err, "Failed to parse .catppuccin.yaml.")
-  catppuccin := structs.Catppuccinyaml{
-    Name:          repo,
-    Exec:          exec,
-    MacosLocation: macloc,
-    LinuxLocation: linuxloc,
-    WinLocation:   windowsloc,
-  }
+	ctp, err := template.New("catppuccin").Parse(string(content))
+	DieIfError(err, "Failed to parse .catppuccin.yaml.")
+	catppuccin := structs.Catppuccinyaml{
+		Name:          repo,
+		Exec:          exec,
+		MacosLocation: macloc,
+		LinuxLocation: linuxloc,
+		WinLocation:   windowsloc,
+	}
 
-  err = ctp.Execute(ctprc, catppuccin)
-  DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
+	err = ctp.Execute(ctprc, catppuccin)
+	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
 }
 
 // MakeFlavour function saves the flavours along with the app_name that the user installs.
-func MakeFlavour(packages []string, flavour string) {
-  for i := 0; i < len(packages); i++ {
-    flavourrc := structs.AppFlavour{
-      AppName: packages[i],
-      Flavour: flavour,
-    }
-    marshalData, err := yaml.Marshal(flavourrc)
-    if err != nil {
-      fmt.Printf("\nCould not marshal data: %s\n", err)
-    }
-    filePath := path.Join(ShareDir(), "flavours.yaml")
-    file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644) // Open the file in append and create if doesn't exist.
-    if err != nil {
-      fmt.Printf("error: %s", err)
-    }
-    if _, err = file.Write(marshalData); err != nil {
-      fmt.Printf("error: %s", err)
-    }
-    // TODO: Find out the loop which causes the file to be written twice when installing multiple packages.
-    /* TODO (2): We also need to implement a way to make sure that if the user installs the same package again, we don't save duplicate entries ;-;
+func MakeLocation(packages, location string) {
+	fmt.Println("Running MakeLocations")
+	flavourrc := structs.AppLocation{
+		AppName: packages,
+		Location: structs.Location{
+			Directory: location,
+		},
+	}
+	marshallData, err := flavourrc.MarshalLocation()
+	if err != nil {
+		fmt.Println("Failed to marshall data.")
+	}
+	filePath := path.Join(ShareDir(), "locations.yaml")
+	if PathExists(filePath) {
+		file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		if err != nil {
+			fmt.Println("Failed to open locations.yaml")
+		}
+		data, _ := io.ReadAll(file)
+		udata, err := structs.UnmarshalLocation(data)
+		if err != nil {
+			fmt.Println("Failed to unmarshal data.")
+		}
+		locations := []structs.AppLocation{}
+		locations = append(locations, udata)
+		for i := 0; i < len(locations); i++ {
+			if packages == locations[i].AppName {
+				if location == locations[i].Location.Directory {
+					fmt.Println("Already exists.")
+					os.Exit(1)
+				}
+			}
+		}
 
-       Note: We can also change this to a JSON based file output. Need to make the appropriate changes in the
-        `saved_flavours.go` structs as well.
-    */
-  }
+	} else {
+		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Println("Cannot open file.")
+		}
+		if _, err := file.Write(marshallData); err != nil {
+			fmt.Println("Failed to write to file.")
+		}
+	}
+
+	//TODO: Find out the loop which causes the file to be written twice when installing multiple packages.
+	/* TODO (2): We also need to implement a way to make sure that if the user installs the same package again, we don't save duplicate entries ;-;
+
+	   Note: We can also change this to a JSON based file output. Need to make the appropriate changes in the
+	    `saved_flavours.go` structs as well.
+	*/
 }
