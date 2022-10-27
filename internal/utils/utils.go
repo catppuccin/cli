@@ -120,7 +120,6 @@ func makeLink(from string, to string, name string) string {
 			fmt.Println(err)
 		}
 	}
-	fmt.Printf("Returning symfile from makeLink: %s\n", symfile)
 	return symfile
 }
 
@@ -153,7 +152,6 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 		// Use the name as name, the link as the from, and the finalDir as the to
 		symfiles = append(symfiles, makeLink(link, finalDir, name))
 	}
-	fmt.Printf("Returning symfiles from MakeLinks: %s\n", symfiles)
 	return symfiles
 }
 
@@ -333,7 +331,6 @@ func SearchRepos(repos structs.SearchRes, term string) structs.SearchEntry {
 // InstallLinks is a wrapper over MakeLinks that parses the mode and uses it to create the correct link, as specified by the ctprc.
 func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir string, mode string) []string {
 	if mode == "default" {
-		fmt.Printf("Returning mode from InstallLinks: %s", mode)
 		// Default mode, just run makeLinks
 		return MakeLinks(baseDir, entry.Default, to, finalDir) // The magic line
 	}
@@ -343,7 +340,6 @@ func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir strin
 	if modeEntry == nil {
 		fmt.Printf("Mode '%s' does not exist.\n", mode)
 	} else {
-		fmt.Printf("Returning from InstallLinks when the modes are not nil")
 		return MakeLinks(baseDir, modeEntry, to, finalDir)
 	}
 	return nil
@@ -364,7 +360,6 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
 	case "mocha":
 		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
 	}
-	fmt.Printf("Returning res from InstallFlavours: %s", res)
 	return res
 }
 
@@ -415,7 +410,6 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 
 // MakeFlavour function saves the flavours along with the app_name that the user installs.
 func MakeLocation(packages, location string) {
-	fmt.Println("Running MakeLocations")
 	flavourrc := structs.AppLocation{
 		AppName: packages,
 		Location: structs.Location{
