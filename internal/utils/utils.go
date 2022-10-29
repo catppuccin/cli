@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"os/user"
 	"path"
+
+	// "path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -409,53 +410,26 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 }
 
 // MakeFlavour function saves the flavours along with the app_name that the user installs.
-func MakeLocation(packages, location string) {
+func MakeLocation(packages string, location []string) {
 	flavourrc := structs.AppLocation{
-		AppName: packages,
-		Location: structs.Location{
-			Directory: location,
-		},
+		Location: location,
 	}
 	marshallData, err := flavourrc.MarshalLocation()
 	if err != nil {
 		fmt.Println("Failed to marshall data.")
 	}
-	filePath := path.Join(ShareDir(), "locations.yaml")
-	if PathExists(filePath) {
-		file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
-		if err != nil {
-			fmt.Println("Failed to open locations.yaml")
-		}
-		data, _ := io.ReadAll(file)
-		udata, err := structs.UnmarshalLocation(data)
-		if err != nil {
-			fmt.Println("Failed to unmarshal data.")
-		}
-		locations := []structs.AppLocation{}
-		locations = append(locations, udata)
-		for i := 0; i < len(locations); i++ {
-			if packages == locations[i].AppName {
-				if location == locations[i].Location.Directory {
-					fmt.Println("Already exists.")
-					os.Exit(1)
-				}
-			}
-		}
+	filepath := packages + ".yaml"
+	finalPath := path.Join(ShareDir(), filepath)
 
-	} else {
-		file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			fmt.Println("Cannot open file.")
-		}
-		if _, err := file.Write(marshallData); err != nil {
-			fmt.Println("Failed to write to file.")
-		}
+	/* An idea: Check if the file we create already has some flavour already installed. If it
+	is already installed, then stop the execution and tell the user that they already have it
+	installed. Or we can just overwrite stuff. Your call.*/
+
+	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Cannot open file.")
 	}
-
-	//TODO: Find out the loop which causes the file to be written twice when installing multiple packages.
-	/* TODO (2): We also need to implement a way to make sure that if the user installs the same package again, we don't save duplicate entries ;-;
-
-	   Note: We can also change this to a JSON based file output. Need to make the appropriate changes in the
-	    `saved_flavours.go` structs as well.
-	*/
+	if _, err := file.Write(marshallData); err != nil {
+		fmt.Println("Failed to write to file.")
+	}
 }

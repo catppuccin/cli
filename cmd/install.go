@@ -117,7 +117,7 @@ func installer(packages []string) {
 		ctprc := programs[i]
 		//Symlink the repo
 		returnedLocation := utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
-		utils.MakeLocation(packages[i], returnedLocation[i])
+		utils.MakeLocation(packages[i], returnedLocation)
 		if comments[i] != "" {
 			os.Stdout.WriteString("\nNote: " + comments[i])
 		}

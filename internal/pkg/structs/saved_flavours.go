@@ -13,10 +13,5 @@ func (r *AppLocation) MarshalLocation() ([]byte, error) {
 }
 
 type AppLocation struct {
-	AppName  string   `yaml:"app_name"`
-	Location Location `yaml:"location"`
-}
-
-type Location struct {
-	Directory string `yaml:"directory"`
+	Location []string `yaml:"location"`
 }
