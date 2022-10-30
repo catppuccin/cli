@@ -89,14 +89,19 @@ func makeLink(from string, to string, name string) string {
 	if to[len(to)-1:] != "/" {
 		fmt.Printf("\n'%s' is not a directory.", to)
 		os.Exit(1)
-	} else if PathExists(to + name) { // To check if the complete path already exists in the case of single files
-		// This removes the original symlink and overwrites it with a new one
-		fmt.Println("Symlink already exists. Removing and relinking...")
-		err := os.Remove(to + name)
+	} else if PathExists(to + name) {
+		fmt.Println("Symlink already exists, removing and relinking...")
+		err := os.RemoveAll(to + name)
+
+		/* This remove a directory and replaces it with the new synlink in case it already exists.
+		The reason to use RemoveAll was that Remove cannot delete a directory if it is not empty.
+		On Unix, RemoveAll uses `rm -rf Dir/`*/
+
 		if err != nil {
 			fmt.Printf("Failed to remove symlink. (Error: %s)\n", err)
 			os.Exit(1)
 		}
+		// Now symlinking again
 		err = os.Symlink(from, symfile)
 		if err != nil {
 			fmt.Println(err)
