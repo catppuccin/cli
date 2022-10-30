@@ -169,12 +169,8 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 func HandleDirPath(baseDir string, link string, finalDir string, name string) []string {
 	// The link directory
 	from := path.Join(baseDir, link)
-	fmt.Println(from)
 	files, err := OSReadDir(from)
 	DieIfError(err, "Failed to read directory while parsing for symlinking.")
-	if err != nil {
-		fmt.Printf("\nError is: %s\n", err)
-	}
 	for i := 0; i < len(files); i++ {
 		files[i] = path.Join(link, files[i])
 	}
