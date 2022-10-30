@@ -44,6 +44,7 @@ func removeInstalled(packages []string) {
 			fmt.Printf("Removing %s...\n", remove[e])
 			os.Remove(remove[e])
 		}
+		os.Remove(pkgrcloc) // Remove the pkgrc
 		fmt.Println("Finished!")
 	}
 }
