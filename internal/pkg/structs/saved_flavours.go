@@ -1,24 +1,17 @@
 package structs
 
-import (
-  "gopkg.in/yaml.v3"
-)
+import "gopkg.in/yaml.v3"
 
-func UnmarshalFlavour(data []byte) (AppFlavour, error) {
-  var r AppFlavour
-  err := yaml.Unmarshal(data, &r)
-  return r, err
+func UnmarshalLocation(data []byte) (AppLocation, error) {
+	var r AppLocation
+	err := yaml.Unmarshal(data, &r)
+	return r, err
 }
 
-func (r *AppFlavour) MarshalFlavour() ([]byte, error) {
-  return yaml.Marshal(r)
+func (r *AppLocation) MarshalLocation() ([]byte, error) {
+	return yaml.Marshal(r)
 }
 
-type AppFlavour struct {
-  AppName          string           `yaml:"app_name"`
-  InstalledFlavour InstalledFlavour `yaml:"installed_flavour"`
-}
-
-type InstalledFlavour struct {
-  Flavour string `yaml:"flavour"`
+type AppLocation struct {
+	Location []string `yaml:"location"`
 }
