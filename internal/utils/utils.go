@@ -159,7 +159,7 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 			symfiles = append(symfiles, makeLink(link, finalDir, name))
 		} else {
 			files := HandleDirPath(baseDir, links[i], finalDir, name)
-			MakeLinks(baseDir, files, to, finalDir)
+			symfiles = MakeLinks(baseDir, files, to, finalDir)
 		}
 	}
 	return symfiles
@@ -352,20 +352,21 @@ func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir strin
 
 // InstallFlavours is a wrapper for InstallLinks which takes the flavour and handles the install accordingly
 func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.Program, installLoc string) []string {
-	var res []string
 	switch flavour {
 	case "all":
-		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
+		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.All, ctprc.Installation.To, installLoc, mode)
 	case "latte":
-		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
+		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Latte, ctprc.Installation.To, installLoc, mode)
 	case "frappe":
-		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
+		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Frappe, ctprc.Installation.To, installLoc, mode)
 	case "macchiato":
-		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
+		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Macchiato, ctprc.Installation.To, installLoc, mode)
 	case "mocha":
-		res = InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
+		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
+	default:
+		log.Fatal("Unexpected flavour")
 	}
-	return res
+	return nil
 }
 
 // CloneTemplate creates the template directory and clones the template repo into it.
@@ -425,9 +426,9 @@ func MakeLocation(packages string, location []string) {
 	filepath := packages + ".yaml"
 	finalPath := path.Join(ShareDir(), filepath)
 
-	/* An idea: Check if the file we create already has some flavour already installed. If it
-	is already installed, then stop the execution and tell the user that they already have it
-	installed. Or we can just overwrite stuff. Your call.*/
+	if PathExists(finalPath) { // If it already exists, remove it
+		os.Remove(finalPath)
+	}
 
 	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {

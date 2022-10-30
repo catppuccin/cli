@@ -3,9 +3,14 @@ package cmd
 import (
 	"fmt"
 	"path"
+
 	//"github.com/catppuccin/cli/internal/pkg/structs"
+	"os"
+
+	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 var Force bool
@@ -28,7 +33,17 @@ func removeInstalled(packages []string) {
 	for i := 0; i < len(packages); i++ {
 		sharedir := utils.ShareDir() // Directory of file
 		pkg := packages[i]           // Current package
-		pkgrc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
-		fmt.Println(pkgrc)
+		pkgrcloc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
+		pkgrcfile, err := os.ReadFile(pkgrcloc)
+		utils.DieIfError(err, fmt.Sprintf("%s is not installed or may have been installed incorrectly or with an older version of the Catppuccin CLI. Please reinstall and try again.", pkg))
+		var pkgrc structs.AppLocation
+		err = yaml.Unmarshal(pkgrcfile, &pkgrc)
+		utils.DieIfError(err, fmt.Sprintf("Failed to read saved data for %s. Error: %s", pkg, err))
+		remove := pkgrc.Location
+		for e := 0; e < len(remove); e++ {
+			fmt.Printf("Removing %s...\n", remove[e])
+			os.Remove(remove[e])
+		}
+		fmt.Println("Finished!")
 	}
 }
