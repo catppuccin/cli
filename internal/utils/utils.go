@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -144,19 +145,22 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 	var symfiles []string
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
-		// Use the regex to get the last part of the file URL and append it to the `to`
+		linkInfo, _ := os.Stat(link)
+		// Check for a file extension; literally just looks for a "."
 		shortPath := re.FindString(link)
 		name := to
-		if strings.Contains(shortPath[2:], ".") {
+		if !linkInfo.IsDir() {
 			// Path is a file, handle that
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
+			// Just link the file
+			fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
+			// Use the name as name, the link as the from, and the finalDir as the to
+			symfiles = append(symfiles, makeLink(link, finalDir, name))
 		} else {
-			HandleDirPath(baseDir, links[i], finalDir, name)
+			files := HandleDirPath(baseDir, links[i], finalDir, name)
+			MakeLinks(baseDir, files, to, finalDir)
 		}
-		fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
-		// Use the name as name, the link as the from, and the finalDir as the to
-		symfiles = append(symfiles, makeLink(link, finalDir, name))
 	}
 	return symfiles
 }
@@ -200,7 +204,7 @@ func HandleFilePath(finalDir string, name string) {
 	fileFolder, _ := path.Split(name)
 	fullDir := path.Join(finalDir, fileFolder)
 	if !PathExists(fullDir) {
-		err := os.Mkdir(fullDir, 0755)
+		err := os.Mkdir(fullDir, 0o755)
 		if err != nil {
 			fmt.Printf("Failed to create parent directory %s", fullDir)
 		}
@@ -222,8 +226,7 @@ func CloneRepo(stagePath string, repo string) string {
 // DieIfError kills the program if err is not nil.
 func DieIfError(err error, message string) {
 	if err != nil {
-		fmt.Println(message)
-		os.Exit(1)
+		log.Fatalf("%s.\nFailed with error: %v", message, err)
 	}
 }
 
@@ -291,7 +294,7 @@ func UpdateJSON() {
 		if err != nil {
 			fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
 		} else {
-			os.WriteFile(dir, body, 0644)
+			os.WriteFile(dir, body, 0o644)
 		}
 	}
 }
@@ -377,8 +380,8 @@ func CloneTemplate(repo string) {
 
 	// Make project directory and clone
 	installPath := path.Join(cwd, repo)
-	err = os.Mkdir(installPath, 0755)
-	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s.", repo))
+	err = os.Mkdir(installPath, 0o755)
+	DieIfError(err, fmt.Sprintf("Failed to make project directory for %s", repo))
 	CloneRepo(installPath, "template") // Clone the template repo into the installPath
 }
 
@@ -394,7 +397,7 @@ func GetTemplateDir(repo string) string {
 // InitTemplate initializes a template repo for the repo name specified.
 func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
 	installPath := GetTemplateDir(repo)
-	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0644)
+	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0o644)
 	DieIfError(err, "Failed to open .catppuccin.yaml.")
 	defer ctprc.Close()
 	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
@@ -414,7 +417,7 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
 }
 
-// MakeFlavour function saves the flavours along with the app_name that the user installs.
+// MakeLocation saves the locations written to during installation into a file for later access.
 func MakeLocation(packages string, location []string) {
 	flavourrc := structs.AppLocation{
 		Location: location,
