@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"strings"
 
 	// "os"
 	// "os/exec"
@@ -9,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"strings"
 )
 
 // you don't need these keymaps but they can be helpful for generating the help
@@ -65,7 +65,11 @@ func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// or you can wrap it as a tea.Msg and send it to the spinnerView to get handled
 			RepoName = strings.TrimSpace(m.textInput.Value()) // QOL addition to remove spaces so that the directory formed is `helix` and
 			// not `helix\ /`
-			return models[initialView+1], models[initialView+1].Init()
+			if RepoName == "" {
+				return m, nil
+			}
+			m := NewExecModel(strings.ToLower(RepoName))
+			return m, m.Init()
 		}
 
 	case errMsg:
