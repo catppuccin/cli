@@ -79,7 +79,10 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 	var symfiles []string
 	for i := 0; i < len(links); i++ {
 		link := path.Join(baseDir, links[i])
-		linkInfo, _ := os.Stat(link)
+		linkInfo, err := os.Stat(link)
+		if err != nil {
+			fmt.Printf("\nFailed to get info about %v\n", err)
+		}
 		// Check for a file extension; literally just looks for a "."
 		shortPath := re.FindString(link)
 		name := to

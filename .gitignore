@@ -30,3 +30,6 @@ cli
 
 # custom
 stage/
+
+# Weird Apple files 
+.DS_STORE
