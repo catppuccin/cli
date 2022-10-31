@@ -32,16 +32,13 @@ It allows you to:
 - Clone the repository and switch to the dev branch. 
 - Make all the changes to dev branch. To build the executable run `go build github.com/catppuccin/cli/cmd/ctp`. 
 
-## Note 
-- You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
-
 ## TODO
 - [ ] Hooks 
 - [ ] Command hooks 
 - [ ] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
-- [ ] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
+- [x] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
 - [ ] Better error handling overall 
-- [ ] Use `gofmt` from now on. 
+- [x] Use `gofmt` from now on. 
 - [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
 - [x] Refactoring: 
   - [x] Move `cmd` to `internal`
