@@ -30,7 +30,7 @@ It allows you to:
 ## Development 
 - The foremost requirement to develop is to make sure that go version 1.19 is installed. 
 - Clone the repository and switch to the dev branch. 
-- Make all the changes to dev branch. To build the executable run `go build -o ctp`. 
+- Make all the changes to dev branch. To build the executable run `go build github.com/catppuccin/cli/cmd/ctp`. 
 
 ## Note 
 - You need to make sure that you set the environmental variable `$ORG_OVERRIDE` to `catppuccin-rfc` or the tool will search for `.catppuccin.yaml` in the `catppuccin` organisation which currently doesn't host the yaml files. This is a temporary measure to test the tool during its development.  
@@ -43,9 +43,9 @@ It allows you to:
 - [ ] Better error handling overall 
 - [ ] Use `gofmt` from now on. 
 - [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
-- [ ] Refactoring: 
-  - [ ] Move `cmd` to `internal`
-  - [ ] Move `main.go` to `cmd/ctp` => Reason: Check [#25](https://github.com/catppuccin/cli/issues/25)
+- [x] Refactoring: 
+  - [x] Move `cmd` to `internal`
+  - [x] Move `main.go` to `cmd/ctp` => Reason: Check [#25](https://github.com/catppuccin/cli/issues/25)
 
 
 &nbsp;
