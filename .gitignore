@@ -25,8 +25,11 @@ go.work
 # build
 dist/
 # binaries
-ctp
-cli
+/ctp*
+/cli*
 
 # custom
 stage/
+
+# Weird Apple files
+.DS_STORE

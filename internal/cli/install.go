@@ -1,15 +1,16 @@
-package cmd
+package cli
 
 import (
 	"fmt"
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 )
 
 var Flavour string
@@ -107,7 +108,7 @@ func installer(packages []string) {
 			}
 		}
 	}
-	for i := 0; i < len(programs); i++ {
+	for i := 0; i < len(programNames); i++ {
 		fmt.Println("\nCloning " + programs[i].AppName + "...")
 		programName := programNames[i]
 		installDir := path.Join(utils.ShareDir(), programName)
@@ -115,7 +116,8 @@ func installer(packages []string) {
 		installLoc := programLocations[i]
 		ctprc := programs[i]
 		//Symlink the repo
-		utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
+		returnedLocation := utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
+		utils.MakeLocation(packages[i], returnedLocation)
 		if comments[i] != "" {
 			os.Stdout.WriteString("\nNote: " + comments[i])
 		}
