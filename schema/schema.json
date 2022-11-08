@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://github.com/catppuccin/cli/raw/main/schema/schema.json",
+  "title": "Catppuccin config",
+  "description": "JSON schema for Catppuccin port configuration file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "app_name",
+    "binary_name",
+    "installation"
+  ],
+  "properties": {
+    "app_name": {
+      "description": "Name of the application",
+      "type": "string"
+    },
+    "binary_name": {
+      "description": "Name of the executable",
+      "type": "string"
+    },
+    "installation": {
+      "description": "Installation location",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "location": {
+          "description": "Location for each OS",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "macos": {
+              "type": "string"
+            },
+            "linux": {
+              "type": "string"
+            },
+            "windows": {
+              "type": "string"
+            }
+          }
+        },
+        "flavours": {
+
+        },
+        "to": {
+          "description": "Where to install theme files to",
+          "type": "string"
+        },
+        "one_flavour": {
+          "description": "Whether there is only a single flavour or not",
+          "type": "boolean"
+        },
+        "comments": {
+          "description": "Post-install comments",
+          "type": "string"
+        },
+        "modes": {
+          "description": "Additional modes for this theme",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "flavour": {
+      "description": "Catppuccin flavour variant",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+      }
+    }
+  }
+}
