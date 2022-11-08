@@ -14,11 +14,15 @@ func init() {
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update",
+	Use:   "update [flags] packages...",
 	Short: "Update packages.",
 	Long:  "Checks repos for any updates to packages.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
 		updater(args)
+		return nil
 	},
 }
 

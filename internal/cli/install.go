@@ -25,11 +25,15 @@ func init() {
 }
 
 var installCmd = &cobra.Command{
-	Use:   "install",
+	Use:   "install [flags] packages...",
 	Short: "Installs the config",
 	Long:  "Installs the configs by cloning them from the Catppuccin repos.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
 		installer(args)
+		return nil
 	},
 }
 
