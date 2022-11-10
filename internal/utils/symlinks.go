@@ -41,20 +41,21 @@ func makeLink(from string, to string, name string) string { // {{{
 		}
 	} else {
 		// Symlink the directory
-		err := os.Symlink(from, symfile) /* Example:
-		 * (Folder)cin-cli/Helix/them
-		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuces/default
-		 * to:   ~/.config/helix/
-		 * name: themes/
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
-		 * (File)
-		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
-		 * to:   ~/.config/helix/
-		 * name: themes/catppuccin_mocha.toml
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */if err != nil {
+		err := os.Symlink(from, symfile)
+		// Example:
+		// (Folder)cin-cli/Helix/them
+		// Symlink themes/default into ~/.config/helix/themes
+		// from: ~/.local/share/catppuces/default
+		// to:   ~/.config/helix/
+		// name: themes/
+		// Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
+		// (File)
+		// Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
+		// from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
+		// to:   ~/.config/helix/
+		// name: themes/catppuccin_mocha.toml
+		// Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
+		if err != nil {
 			fmt.Println(err)
 		}
 	}
