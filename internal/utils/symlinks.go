@@ -27,11 +27,9 @@ func makeLink(from string, to string, name string) string { // {{{
 	} else if PathExists(to + name) {
 		fmt.Println("Symlink already exists, removing and relinking...")
 		err := os.RemoveAll(to + name)
-
-		/* This remove a directory and replaces it with the new synlink in case it already exists.
-		The reason to use RemoveAll was that Remove cannot delete a directory if it is not empty.
-		On Unix, RemoveAll uses `rm -rf Dir/`*/
-
+		// This remove a directory and replaces it with the new synlink in case it already exists.
+		// The reason to use RemoveAll was that Remove cannot delete a directory if it is not empty.
+		// On Unix, RemoveAll uses `rm -rf Dir/`
 		if err != nil {
 			fmt.Printf("Failed to remove symlink. (Error: %s)\n", err)
 			os.Exit(1)
@@ -43,20 +41,20 @@ func makeLink(from string, to string, name string) string { // {{{
 		}
 	} else {
 		// Symlink the directory
-		err := os.Symlink(from, symfile) /* Example:
-		 * (Folder)cin-cli/Helix/them
-		 * Symlink themes/default into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuces/default
-		 * to:   ~/.config/helix/
-		 * name: themes/
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
-		 * (File)
-		 * Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
-		 * from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
-		 * to:   ~/.config/helix/
-		 * name: themes/catppuccin_mocha.toml
-		 * Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
-		 */
+		err := os.Symlink(from, symfile)
+		// Example:
+		// (Folder)cin-cli/Helix/them
+		// Symlink themes/default into ~/.config/helix/themes
+		// from: ~/.local/share/catppuces/default
+		// to:   ~/.config/helix/
+		// name: themes/
+		// Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes to ~/.config/helix/themes
+		// (File)
+		// Symlink themes/default/catppuccin_mocha.toml into ~/.config/helix/themes
+		// from: ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml
+		// to:   ~/.config/helix/
+		// name: themes/catppuccin_mocha.toml
+		// Creates a symlink from ~/.local/share/catppuccin-cli/Helix/themes/default/catppuccin_mocha.toml to ~/.config/helix/themes/catppuccin_mocha.toml
 		if err != nil {
 			fmt.Println(err)
 		}

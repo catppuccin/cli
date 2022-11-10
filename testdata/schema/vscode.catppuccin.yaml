@@ -1,0 +1,28 @@
+# A catppuccin RC for vscode. In beta, specs may change.
+app_name: vscode
+binary_name: code
+installation:
+  location:
+    macos: ~/.vscode/extensions/
+    linux: ~/.vscode/extensions/
+    windows: "%userprofile%/.vscode/extensions"
+  flavours:
+    all:
+      default:
+        - themes/
+    latte:
+      default:
+        - themes/Catppuccin-latte-color-theme.json
+    frappe:
+      default:
+        - themes/Catppuccin-frappe-color-theme.json
+    macchiato:
+      default:
+        - themes/Catppuccin-macchiato-color-theme.json
+    mocha:
+      default:
+        - themes/Catppuccin-mocha-color-scheme.json
+  to: catppuccin/
+  canInstall: 0
+  comments: "Run something to configure something maybe?"
+

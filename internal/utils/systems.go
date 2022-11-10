@@ -11,12 +11,12 @@ import ( // {{{
 	"os"
 	"os/user"
 	"path"
-
-	// "path/filepath"
-	"github.com/go-git/go-git/v5"
 	"regexp"
 	"strings"
 	"text/template"
+
+	// "path/filepath"
+	"github.com/go-git/go-git/v5"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
 ) // }}}
@@ -118,7 +118,7 @@ func MakeLocation(packages string, location []string) { // {{{
 		os.Remove(finalPath)
 	}
 
-	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		fmt.Println("Cannot open file.")
 	}
