@@ -4,7 +4,7 @@
   "title": "Catppuccin config",
   "description": "JSON schema for Catppuccin port configuration file",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "app_name",
     "binary_name",
