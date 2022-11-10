@@ -8,6 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v47 v47.0.0
 	github.com/lithammer/fuzzysearch v1.1.5
+	github.com/matryer/is v1.4.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/spf13/cobra v1.5.0
 	github.com/xeipuuv/gojsonschema v1.2.0

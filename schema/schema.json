@@ -41,7 +41,26 @@
           }
         },
         "flavours": {
-
+          "description": "Flavours for this theme",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "$ref": "#/$defs/flavour"
+            },
+            "latte": {
+              "$ref": "#/$defs/flavour"
+            },
+            "frappe": {
+              "$ref": "#/$defs/flavour"
+            },
+            "macchiato": {
+              "$ref": "#/$defs/flavour"
+            },
+            "mocha": {
+              "$ref": "#/$defs/flavour"
+            }
+          }
         },
         "to": {
           "description": "Where to install theme files to",
@@ -67,11 +86,29 @@
   },
   "$defs": {
     "flavour": {
-      "description": "Catppuccin flavour variant",
+      "description": "Catppuccin flavour entry",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
+        "default": {
+          "description": "Default flavour entry",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "additional": {
+          "description": "Additional flavour entries",
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   }

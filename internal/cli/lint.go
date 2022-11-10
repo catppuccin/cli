@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"errors"
+	"fmt"
 	"github.com/catppuccin/cli/schema"
 	"github.com/spf13/cobra"
 	"os"
@@ -18,7 +20,21 @@ var lintCmd = &cobra.Command{
 		if len(args) == 0 {
 			return cmd.Help()
 		}
-		return linter(args[0])
+
+		if err := linter(args[0]); err != nil {
+			var errs schema.ResultErrors
+			if errors.As(err, &errs) {
+				fmt.Println("Port config is invalid!")
+				fmt.Println()
+				for _, e := range errs {
+					fmt.Println(e)
+				}
+				return nil
+			}
+			return err
+		}
+		fmt.Println("Port config is valid!")
+		return nil
 	},
 }
 
