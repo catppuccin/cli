@@ -3,9 +3,10 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/catppuccin/cli/schema"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func init() {
