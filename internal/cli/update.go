@@ -28,7 +28,7 @@ func updater(packages []string) {
 		repo := packages[i]
 		repo_dir := path.Join(utils.ShareDir(), repo)
 		if !utils.PathExists(repo_dir) {
-			log.Fatalf("Cannot find installed %s.\n", repo)
+			log.Errorf("Cannot find installed %s.\n", repo)
 		} else {
 			utils.PullUpdates(repo_dir)
 		}

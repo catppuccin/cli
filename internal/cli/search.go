@@ -36,7 +36,7 @@ func searchPackage(searchQuery []string) {
 	}
 	body, err := os.ReadFile(dir)
 	if err != nil {
-		log.WithError(err).Fatalf("Cannot open file. ")
+		log.Fatalf("Cannot open file.")
 	}
 	for i := 0; i < len(searchQuery); i++ {
 		cache, err := structs.UnmarshalSearch(body)

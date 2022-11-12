@@ -37,7 +37,7 @@ func installer(packages []string) {
 	log.DecreasePadding()
 	log.Info("Installing packages...")
 	for i := 0; i < len(packages); i++ {
-		fmt.Println(packages[i])
+		log.Infof(packages[i])
 	}
 	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
 	var success []string
@@ -47,16 +47,16 @@ func installer(packages []string) {
 		rc := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/.catppuccin.yaml", org, repo)
 		res, err := http.Get(rc)
 		if err != nil {
-			log.WithError(err).Fatalf("Could not make GET request")
+			log.Fatalf("Could not make GET request")
 		}
 		if res.StatusCode != 200 {
-			log.WithError(err).Fatalf("%s does not have a .catppuccin.yaml", repo)
+			log.Errorf("%s does not have a .catppuccin.yaml.", repo)
 		} else {
 			success = append(success, string(repo))
 		}
 	}
 
-	fmt.Println("\nChecking for installed packages:")
+	log.Info("Checking for installed packages:")
 	programs := []structs.Program{}
 	programLocations := []string{}
 	programNames := []string{}
@@ -64,36 +64,40 @@ func installer(packages []string) {
 
 	for i := 0; i < len(success); i++ {
 		rc := "https://raw.githubusercontent.com/" + org + "/" + success[i] + "/main/.catppuccin.yaml"
-		res, _ := http.Get(rc)
-
+		res, err := http.Get(rc)
+		if err != nil {
+			log.Errorf("Could not make GET request")
+		}
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				log.WithError(err).Fatalf("Could not close body")
+				log.Errorf("Could not close body")
 			}
 		}(res.Body)
 
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
-			log.WithError(err).Fatalf("Failed to read body")
+			log.Errorf("Failed to read body")
 		} else {
 			ctprc, err := structs.UnmarshalProgram(body)
 			if err != nil {
-				log.WithError(err).Fatalf(".catppuccin.yaml couldn't be unmarshaled correctly. Some data may be corrupted. (%s)\n", err)
+				log.Errorf(".catppuccin.yaml couldn't be unmarshaled correctly. Some data may be corrupted.\n")
 			}
-			fmt.Println(ctprc.AppName)
-			InstallDir := ""
-			if runtime.GOOS == "windows" {
+			var InstallDir string
+			switch runtime.GOOS {
+			case "windows":
 				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Windows)
-			} else if runtime.GOOS == "linux" {
+			case "linux":
 				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Linux)
-			} else {
-				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Macos) // Just make the naive assumption that if it's not Windows or Linux, it's MacOS.
+			case "darwin":
+				InstallDir = utils.HandleDir(ctprc.Installation.InstallLocation.Macos)
+			default:
+				log.Errorf("Your OS is not supported.")
 			}
 			_, err = os.Stat(InstallDir)
 
 			if err != nil {
-				log.WithError(err).Fatalf("%s was not detected. %s\n", InstallDir, err)
+				log.Errorf("%s was not detected. \n", InstallDir)
 			} else {
 				log.Infof("%s path found at %s", ctprc.AppName, InstallDir)
 				programs = append(programs, ctprc)
@@ -104,7 +108,7 @@ func installer(packages []string) {
 		}
 	}
 	for i := 0; i < len(programNames); i++ {
-		log.Infof("Cloning " + programs[i].AppName + "...")
+		log.Info("Cloning " + programs[i].AppName + "...")
 		programName := programNames[i]
 		installDir := path.Join(utils.ShareDir(), programName)
 		baseDir := utils.CloneRepo(installDir, programName)

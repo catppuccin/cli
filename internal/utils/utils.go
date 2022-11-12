@@ -116,14 +116,14 @@ func CloneTemplate(repo string) {
 	// Get current directory
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to get current directory.")
+		log.Fatalf("Failed to get current directory.")
 	}
 
 	// Make project directory and clone
 	installPath := path.Join(cwd, repo)
 	err = os.Mkdir(installPath, 0o755)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to create project directory for %v.", repo)
+		log.Fatalf("Failed to create project directory for %v.", repo)
 	}
 	CloneRepo(installPath, "template") // Clone the template repo into the installPath
 }
@@ -133,7 +133,7 @@ func GetTemplateDir(repo string) string {
 	// Get current directory
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to get current directory.")
+		log.Fatalf("Failed to get current directory.")
 	}
 	installPath := path.Join(cwd, repo)
 	return installPath

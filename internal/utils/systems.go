@@ -77,7 +77,7 @@ func CloneRepo(stagePath string, repo string) string {
 		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
 	})
 	if err != nil {
-		fmt.Println(err)
+		log.Error("Could not clone repo")
 	}
 	return stagePath
 }
@@ -87,16 +87,16 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 	installPath := GetTemplateDir(repo)
 	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0o644)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to open .catppuccin.yaml")
+		log.Fatalf("Failed to open .catppuccin.yaml")
 	}
 	defer ctprc.Close()
 	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to read .catppuccin.yaml")
+		log.Fatalf("Failed to read .catppuccin.yaml")
 	}
 	ctp, err := template.New("catppuccin").Parse(string(content))
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to parse .catppuccin.yaml")
+		log.Fatalf("Failed to parse .catppuccin.yaml")
 	}
 	catppuccin := structs.Catppuccinyaml{
 		Name:          repo,
@@ -108,7 +108,7 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 
 	err = ctp.Execute(ctprc, catppuccin)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to execute template.")
+		log.Fatalf("Failed to write to .catppuccin.yaml")
 	}
 }
 
@@ -119,8 +119,7 @@ func MakeLocation(packages string, location []string) {
 	}
 	marshallData, err := flavourrc.MarshalLocation()
 	if err != nil {
-		// fmt.Println("Failed to marshall data.")
-		log.WithError(err).Fatalf("Failed to marshall data.")
+		log.Error("Failed to marshall data.")
 	}
 	filepath := packages + ".yaml"
 	finalPath := path.Join(ShareDir(), filepath)
@@ -131,11 +130,9 @@ func MakeLocation(packages string, location []string) {
 
 	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		// fmt.Println("Cannot open file.")
-		log.WithError(err).Fatalf("Cannot open file.")
+		log.Error("Cannot open file.")
 	}
 	if _, err := file.Write(marshallData); err != nil {
-		// fmt.Println("Failed to write to file.")
-		log.WithError(err).Fatalf("Failed to write to file.")
+		log.Error("Failed to write to file.")
 	}
 }

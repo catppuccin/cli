@@ -37,12 +37,12 @@ func removeInstalled(packages []string) {
 		pkgrcloc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
 		pkgrcfile, err := os.ReadFile(pkgrcloc)
 		if err != nil {
-			log.WithError(err).Fatalf("Could not read %s.yaml", pkg)
+			log.Fatalf("Could not read %s.yaml", pkg)
 		}
 		var pkgrc structs.AppLocation
 		err = yaml.Unmarshal(pkgrcfile, &pkgrc)
 		if err != nil {
-			log.WithError(err).Fatalf("Failed to read saved data for %v.", pkg)
+			log.Fatalf("Failed to read saved data for %v.", pkg)
 		}
 		remove := pkgrc.Location
 		for e := 0; e < len(remove); e++ {

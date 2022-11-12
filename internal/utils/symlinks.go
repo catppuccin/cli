@@ -22,10 +22,8 @@ func makeLink(from string, to string, name string) string {
 	symfile := path.Join(to, name)
 	if to[len(to)-1:] != "/" {
 		// fmt.Printf("\n'%s' is not a directory.", to)
-		log.Errorf("'%s' is not a directory.", to)
-		os.Exit(1)
+		log.Fatalf("'%s' is not a directory.", to)
 	} else if PathExists(to + name) {
-		// fmt.Println("Symlink already exists, removing and relinking...")
 		log.Info("Symlink already exists, removing and relinking...")
 		err := os.RemoveAll(to + name)
 
@@ -35,14 +33,12 @@ func makeLink(from string, to string, name string) string {
 
 		if err != nil {
 			// fmt.Printf("Failed to remove symlink. (Error: %s)\n", err)
-			log.WithError(err).Fatalf("Failed to remove symlink.")
-			os.Exit(1)
+			log.Fatalf("Failed to remove symlink.")
 		}
 		// Now symlinking again
 		err = os.Symlink(from, symfile)
 		if err != nil {
-			// fmt.Println(err)
-			log.WithError(err).Fatalf("Failed to symlink.")
+			log.Error("Failed to symlink.")
 		}
 	} else {
 		// Symlink the directory
@@ -62,7 +58,7 @@ func makeLink(from string, to string, name string) string {
 		 */
 		if err != nil {
 			// fmt.Println(err)
-			log.WithError(err).Fatalf("Failed to symlink.")
+			log.Error("Failed to symlink.")
 		}
 	}
 	return symfile
@@ -86,8 +82,7 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 		link := path.Join(baseDir, links[i])
 		linkInfo, err := os.Stat(link)
 		if err != nil {
-			// fmt.Printf("\nFailed to get info about %v\n", err)
-			log.WithError(err).Fatalf("Failed to get info about file.")
+			log.Error("Failed to get info about file.")
 		}
 		// Check for a file extension; literally just looks for a "."
 		shortPath := re.FindString(link)
@@ -97,7 +92,6 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
 			// Just link the file
-			// fmt.Printf("Linking: %s to %s via %s\n", link, finalDir, name)
 			log.Infof("Linking: %s to %s via %s", link, finalDir, name)
 			// Use the name as name, the link as the from, and the finalDir as the to
 			symfiles = append(symfiles, makeLink(link, finalDir, name))
@@ -115,8 +109,7 @@ func HandleDirPath(baseDir string, link string, finalDir string, name string) []
 	from := path.Join(baseDir, link)
 	files, err := OSReadDir(from)
 	if err != nil {
-		// fmt.Printf("Failed to read directory: %s\n", err)
-		log.WithError(err).Fatalf("Failed to read directory while parsing for symlinks.")
+		log.Fatalf("Failed to read directory while parsing for symlinks.")
 	}
 	for i := 0; i < len(files); i++ {
 		files[i] = path.Join(link, files[i])
@@ -132,8 +125,7 @@ func HandleFilePath(finalDir string, name string) {
 	if !PathExists(fullDir) {
 		err := os.Mkdir(fullDir, 0o755)
 		if err != nil {
-			// fmt.Printf("Failed to create parent directory %s", fullDir)
-			log.WithError(err).Fatalf("Failed to create parent directory.")
+			log.Error("Failed to create parent directory.")
 		}
 	}
 }
@@ -148,8 +140,7 @@ func InstallLinks(baseDir string, entry structs.Entry, to string, finalDir strin
 	modes := entry.Additional
 	modeEntry := modes[mode]
 	if modeEntry == nil {
-		// fmt.Printf("Mode '%s' does not exist.\n", mode)
-		log.WithField("mode", mode).Fatalf("Mode does not exist.")
+		log.Error("Mode does not exist.")
 	} else {
 		return MakeLinks(baseDir, modeEntry, to, finalDir)
 	}
@@ -170,7 +161,6 @@ func InstallFlavours(baseDir string, mode string, flavour string, ctprc structs.
 	case "mocha":
 		return InstallLinks(baseDir, ctprc.Installation.InstallFlavours.Mocha, ctprc.Installation.To, installLoc, mode)
 	default:
-		// log.Fatal("Unexpected flavour")
 		log.Fatalf("Unexpected flavour: %s", flavour)
 	}
 	return nil

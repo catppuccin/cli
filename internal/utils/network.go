@@ -9,7 +9,6 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path"
 
@@ -27,13 +26,13 @@ func PullUpdates(repo string) {
 	r, err := git.PlainOpen(repo) // Open new repo targeting the .git folder
 	if err != nil {
 		// fmt.Printf("Error opening repo folder: %s\n", err)
-		log.WithError(err).Fatalf("Error opening repo folder.")
+		log.Errorf("Error opening repo folder.")
 	} else {
 		// Get working directory
 		w, err := r.Worktree()
 		if err != nil {
 			// fmt.Printf("Error getting working directory: %s\n", err)
-			log.WithError(err).Fatalf("Error getting working directory")
+			log.Fatalf("Error getting working directory")
 		} else {
 			// Pull the latest changes from origin
 			// fmt.Printf("Pulling latest changes for %s...\n", repo)
@@ -41,7 +40,7 @@ func PullUpdates(repo string) {
 			err = w.Pull(&git.PullOptions{RemoteName: "origin"})
 			if err != nil {
 				// fmt.Printf("Failed to pull updates: %s\n", err)
-				log.WithError(err).Fatalf("Failed to pull updates")
+				log.Fatalf("Failed to pull updates")
 			}
 		}
 	}
@@ -60,9 +59,9 @@ func UpdateJSON() {
 	// Handle errors
 	if err != nil {
 		// fmt.Println("Failed to get repositories.")
-		log.WithError(err).Error("Failed to get repositories")
+		log.Error("Failed to get repositories")
 	} else {
-		fmt.Println("Received repositories. Caching!")
+		log.Info("Received repositories. Caching!")
 		themes := []structs.SearchEntry{}
 		for i := 0; i < len(repos); i++ {
 			repo := repos[i]
@@ -79,7 +78,7 @@ func UpdateJSON() {
 		body, err := json.Marshal(themes)
 		if err != nil {
 			// fmt.Printf("Failed to marshal cache: %s\nPlease try again.\n", err)
-			log.WithError(err).Fatalf("Failed to marshal cache. Please try again!")
+			log.Error("Failed to marshal cache. Please try again!")
 		} else {
 			os.WriteFile(dir, body, 0o644)
 		}
