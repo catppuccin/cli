@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"fmt"
 	"path"
 
+	"github.com/caarlos0/log"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +28,7 @@ func updater(packages []string) {
 		repo := packages[i]
 		repo_dir := path.Join(utils.ShareDir(), repo)
 		if !utils.PathExists(repo_dir) {
-			fmt.Printf("Cannot find installed %s.\n", repo)
+			log.Fatalf("Cannot find installed %s.\n", repo)
 		} else {
 			utils.PullUpdates(repo_dir)
 		}

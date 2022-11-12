@@ -6,26 +6,29 @@ paths or the filesystem.
 */
 package utils
 
-import ( // {{{
+import (
 	"fmt"
 	"os"
 	"os/user"
 	"path"
 
-	// "path/filepath"
-	"github.com/go-git/go-git/v5"
 	"regexp"
 	"strings"
 	"text/template"
 
+	"github.com/caarlos0/log"
+	"github.com/go-git/go-git/v5"
+
 	"github.com/catppuccin/cli/internal/pkg/structs"
-) // }}}
+)
 
 // HandleDir handles a directory, replacing certain parts with known attributes.
-func HandleDir(dir string) string { // {{{
+func HandleDir(dir string) string {
 	usr, _ := user.Current()
 	envre, err := regexp.Compile(`\$([A-z0-9_\-]+)\/`) // Create the regex to detect environment variables
-	DieIfError(err, "Failed to compile environment checking regex. Try running again.")
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to compile regex.")
+	}
 	dir = strings.Replace(dir, "%userprofile%", usr.HomeDir, -1)
 	dir = strings.Replace(dir, "~", usr.HomeDir, -1)
 	appdata, _ := os.UserConfigDir()
@@ -39,18 +42,18 @@ func HandleDir(dir string) string { // {{{
 		dir = envre.ReplaceAllString(dir, result)
 	}
 	return dir
-} // }}}
+}
 
 // ShareDir generates the share directory for the cli.
-func ShareDir() string { // {{{
+func ShareDir() string {
 	if IsWindows() {
 		return path.Join(UserHomeDir(), "AppData/LocalLow/catppuccin-cli")
 	}
 	return path.Join(GetEnv("XDG_DATA_HOME", HandleDir("~/.local/")), "share/catppuccin-cli")
-} // }}}
+}
 
 // OSReadDir expands a directory path into a list of files within that directory. Not recursive.
-func OSReadDir(root string) ([]string, error) { // {{{
+func OSReadDir(root string) ([]string, error) {
 	var files []string
 	f, err := os.Open(root)
 	if err != nil {
@@ -65,10 +68,10 @@ func OSReadDir(root string) ([]string, error) { // {{{
 		files = append(files, file.Name())
 	}
 	return files, nil
-} // }}}
+}
 
 // CloneRepo clones a repo into the specified location.
-func CloneRepo(stagePath string, repo string) string { // {{{
+func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
 		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
@@ -77,19 +80,24 @@ func CloneRepo(stagePath string, repo string) string { // {{{
 		fmt.Println(err)
 	}
 	return stagePath
-} // }}}
+}
 
 // InitTemplate initializes a template repo for the repo name specified.
-func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) { // {{{
+func InitTemplate(repo string, exec string, linuxloc string, macloc string, windowsloc string) {
 	installPath := GetTemplateDir(repo)
 	ctprc, err := os.OpenFile(path.Join(installPath, ".catppuccin.yaml"), os.O_WRONLY, 0o644)
-	DieIfError(err, "Failed to open .catppuccin.yaml.")
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to open .catppuccin.yaml")
+	}
 	defer ctprc.Close()
 	content, err := os.ReadFile(path.Join(installPath, ".catppuccin.yaml")) // Don't use ioutil.ReadFile. Deprecated.
-	DieIfError(err, "Failed to read .catppuccin.yaml.")
-
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to read .catppuccin.yaml")
+	}
 	ctp, err := template.New("catppuccin").Parse(string(content))
-	DieIfError(err, "Failed to parse .catppuccin.yaml.")
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to parse .catppuccin.yaml")
+	}
 	catppuccin := structs.Catppuccinyaml{
 		Name:          repo,
 		Exec:          exec,
@@ -99,17 +107,20 @@ func InitTemplate(repo string, exec string, linuxloc string, macloc string, wind
 	}
 
 	err = ctp.Execute(ctprc, catppuccin)
-	DieIfError(err, fmt.Sprintf("Failed to write to .catppuccin.yaml:%s", err))
-} // }}}
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to execute template.")
+	}
+}
 
 // MakeLocation saves the locations written to during installation into a file for later access.
-func MakeLocation(packages string, location []string) { // {{{
+func MakeLocation(packages string, location []string) {
 	flavourrc := structs.AppLocation{
 		Location: location,
 	}
 	marshallData, err := flavourrc.MarshalLocation()
 	if err != nil {
-		fmt.Println("Failed to marshall data.")
+		// fmt.Println("Failed to marshall data.")
+		log.WithError(err).Fatalf("Failed to marshall data.")
 	}
 	filepath := packages + ".yaml"
 	finalPath := path.Join(ShareDir(), filepath)
@@ -120,9 +131,11 @@ func MakeLocation(packages string, location []string) { // {{{
 
 	file, err := os.OpenFile(finalPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Println("Cannot open file.")
+		// fmt.Println("Cannot open file.")
+		log.WithError(err).Fatalf("Cannot open file.")
 	}
 	if _, err := file.Write(marshallData); err != nil {
-		fmt.Println("Failed to write to file.")
+		// fmt.Println("Failed to write to file.")
+		log.WithError(err).Fatalf("Failed to write to file.")
 	}
-} // }}}
+}

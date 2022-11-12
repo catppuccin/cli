@@ -1,8 +1,7 @@
 package ui
 
 import (
-	"fmt"
-
+	"github.com/caarlos0/log"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -14,7 +13,8 @@ func Run() {
 		panic(err)
 	}
 	if Cloned {
-		fmt.Println("Finished!")
+		// fmt.Println("Finished!")
+		log.Log.Info("Finished!")
 	}
 }
 
