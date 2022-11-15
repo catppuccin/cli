@@ -41,3 +41,12 @@ installation: # Install instructions
   one_flavour: false # Only one flavour?
   modes: # Additional modes
     - no-italics
+  hooks:
+    install:
+      - type: shell
+        args:
+          - "honk"
+    uninstall:
+      - type: browser
+        args:
+          - "https://example.com"
