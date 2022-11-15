@@ -80,6 +80,27 @@
           "items": {
             "type": "string"
           }
+        },
+        "hooks": {
+          "description": "(Un)Installation hooks",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "install": {
+              "description": "Install hooks",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/hook"
+              }
+            },
+            "uninstall": {
+              "description": "Uninstall hooks",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/hook"
+              }
+            }
+          }
         }
       }
     }
@@ -107,6 +128,33 @@
                 "type": "string"
               }
             }
+          }
+        }
+      }
+    },
+    "hook": {
+      "description": "(Un)Installation hook",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "args"
+      ],
+      "properties": {
+        "type": {
+          "description": "Hook type",
+          "type": "string",
+          "enum": [
+            "shell",
+            "browser"
+          ]
+        },
+        "args": {
+          "description": "Hook arguments",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
           }
         }
       }
