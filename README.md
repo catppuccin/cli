@@ -31,6 +31,10 @@ It allows you to:
 - The foremost requirement to develop is to make sure that go version 1.19 is installed. 
 - Development and contribution guidelines along with the future development plans have been added to the [wiki](https://github.com/catppuccin/cli/wiki/Contributing).
 
+## Docker image 
+- The cli also has a Docker image. To build it, run `docker build --network=host -t ctp:latest .`.
+- To run the built image, run the command `docker run -it --rm --net=host ctp:latest help`.
+
 ## TODO
 - [ ] Hooks 
 - [ ] Command hooks 
