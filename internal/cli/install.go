@@ -2,15 +2,16 @@ package cli
 
 import (
 	"fmt"
-	"github.com/caarlos0/log"
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/caarlos0/log"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -73,13 +74,7 @@ func installer(packages []string) {
 		if err != nil {
 			log.Errorf("Could not make GET request")
 		}
-		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				log.Errorf("Could not close body")
-			}
-		}(res.Body)
-
+		defer res.Body.Close()
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Errorf("Failed to read body")
