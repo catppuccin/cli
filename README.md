@@ -37,12 +37,14 @@ It allows you to:
 
 ## TODO
 - [ ] Hooks 
-- [ ] Command hooks 
-- [ ] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
+  - [x] Install hooks
+  - [ ] Uninstall hooks
+- [x] Command hooks: To execute shell scripts.  
+- [x] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
 - [x] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
-- [ ] Better error handling overall 
+- [x] Better error handling overall 
 - [x] Use `gofmt` from now on. 
-- [ ] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
+- [x] Rewrite the wiki for catppuccin/cli to make first contributions easier. 
 - [x] Refactoring: 
   - [x] Move `cmd` to `internal`
   - [x] Move `main.go` to `cmd/ctp` => Reason: Check [#25](https://github.com/catppuccin/cli/issues/25)
