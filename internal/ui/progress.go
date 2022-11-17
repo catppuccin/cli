@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/caarlos0/log"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -38,7 +39,9 @@ func CloneRepo(stagePath string, repo string) string {
 		Progress: gitProgress,
 	})
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
+		log.WithError(err).Error("failed to clone repo")
+
 	}
 	return stagePath
 }

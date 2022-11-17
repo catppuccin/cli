@@ -2,8 +2,13 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"path"
+
+	//"github.com/catppuccin/cli/internal/pkg/structs"
+
+	"os"
+
+	"github.com/caarlos0/log"
 
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
@@ -37,16 +42,20 @@ func removeInstalled(packages []string) {
 		pkg := packages[i]           // Current package
 		pkgrcloc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
 		pkgrcfile, err := os.ReadFile(pkgrcloc)
-		utils.DieIfError(err, fmt.Sprintf("%s is not installed or may have been installed incorrectly or with an older version of the Catppuccin CLI. Please reinstall and try again.", pkg))
+		if err != nil {
+			log.Fatalf("Could not read %s.yaml", pkg)
+		}
 		var pkgrc structs.AppLocation
 		err = yaml.Unmarshal(pkgrcfile, &pkgrc)
-		utils.DieIfError(err, fmt.Sprintf("Failed to read saved data for %s. Error: %s", pkg, err))
+		if err != nil {
+			log.Fatalf("Failed to read saved data for %v.", pkg)
+		}
 		remove := pkgrc.Location
 		for e := 0; e < len(remove); e++ {
-			fmt.Printf("Removing %s...\n", remove[e])
+			log.Infof("Removing %s...", remove[e])
 			os.Remove(remove[e])
 		}
 		os.Remove(pkgrcloc) // Remove the pkgrc
-		fmt.Println("Finished!")
+		log.Info("Finished!")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	// "github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/caarlos0/log"
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
@@ -26,27 +27,26 @@ var searchCmd = &cobra.Command{
 func searchPackage(searchQuery []string) {
 	fmt.Println("Searching for packages:")
 	for i := 0; i < len(searchQuery); i++ {
-		fmt.Printf("%s\n", searchQuery[i])
+		log.Infof("\n", searchQuery[i])
 	}
 	dir := utils.ShareDir() + "/repos.json"
 	if !utils.PathExists(dir) { // If repos.json file does not exist.
-		fmt.Printf("\n%s does not exist. Caching JSON...", dir)
+		log.Infof("\n%s does not exist. Caching JSON...", dir)
 		utils.UpdateJSON()
 	}
 	body, err := os.ReadFile(dir)
 	if err != nil {
-		fmt.Println("Cannot open file. ")
-		os.Exit(1)
+		log.Fatalf("Cannot open file.")
 	}
 	for i := 0; i < len(searchQuery); i++ {
 		cache, err := structs.UnmarshalSearch(body)
 		if err != nil {
-			fmt.Printf("Error opening cache: %s", err)
+			log.WithError(err).Fatalf("Error opening cache: %s", err)
 		} else {
 			result := utils.SearchRepos(cache, searchQuery[i])
 			var resp string
-			fmt.Printf("Found repo: %s", result.Name)
-			fmt.Println("Do you want to install it? (Y/n)")
+			log.Infof("Found repo: %s", result.Name)
+			log.Info("\nDo you want to install it? (Y/n)")
 			if fmt.Scanln(&resp); resp == "Y" || resp == "y" {
 				installer(searchQuery)
 			}
