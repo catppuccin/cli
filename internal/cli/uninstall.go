@@ -5,9 +5,11 @@ import (
 	"path"
 
 	//"github.com/catppuccin/cli/internal/pkg/structs"
+
 	"os"
 
 	"github.com/caarlos0/log"
+
 	"github.com/catppuccin/cli/internal/pkg/structs"
 	"github.com/catppuccin/cli/internal/utils"
 	"github.com/spf13/cobra"
@@ -22,11 +24,15 @@ func init() {
 }
 
 var removeCmd = &cobra.Command{
-	Use:   "remove",
+	Use:   "uninstall [flags] packages...",
 	Short: "Removes the installed configs",
 	Long:  "Removes the config files for installed programs",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
 		removeInstalled(args)
+		return nil
 	},
 }
 

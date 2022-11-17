@@ -2,20 +2,21 @@ package cli
 
 import (
 	"fmt"
+	"github.com/caarlos0/log"
+	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/catppuccin/cli/internal/utils"
+	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"runtime"
-
-	"github.com/caarlos0/log"
-	"github.com/catppuccin/cli/internal/pkg/structs"
-	"github.com/catppuccin/cli/internal/utils"
-	"github.com/spf13/cobra"
 )
 
-var Flavour string
-var Mode string
+var (
+	Flavour string
+	Mode    string
+)
 
 func init() {
 	rootCmd.AddCommand(installCmd)
@@ -24,11 +25,15 @@ func init() {
 }
 
 var installCmd = &cobra.Command{
-	Use:   "install",
+	Use:   "install [flags] packages...",
 	Short: "Installs the config",
 	Long:  "Installs the configs by cloning them from the Catppuccin repos.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
 		installer(args)
+		return nil
 	},
 }
 
@@ -119,7 +124,12 @@ func installer(packages []string) {
 		returnedLocation := utils.InstallFlavours(baseDir, Mode, Flavour, ctprc, installLoc)
 		utils.MakeLocation(packages[i], returnedLocation)
 		if comments[i] != "" {
-			os.Stdout.WriteString("\nNote: " + comments[i])
+			fmt.Println("\nNote: " + comments[i])
+		}
+		for _, hook := range ctprc.Installation.Hooks.Install {
+			if err := hook.Run(); err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 	// nya~

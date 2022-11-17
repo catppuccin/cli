@@ -29,8 +29,7 @@ It allows you to:
 
 ## Development 
 - The foremost requirement to develop is to make sure that go version 1.19 is installed. 
-- Clone the repository and switch to the dev branch. 
-- Make all the changes to dev branch. To build the executable run `go build github.com/catppuccin/cli/cmd/ctp`. 
+- Development and contribution guidelines along with the future development plans have been added to the [wiki](https://github.com/catppuccin/cli/wiki/Contributing).
 
 ## TODO
 - [ ] Hooks 

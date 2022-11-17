@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/user"
 	"path"
-
 	"regexp"
 	"strings"
 	"text/template"
