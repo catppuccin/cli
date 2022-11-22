@@ -16,9 +16,8 @@ import (
 	"text/template"
 
 	"github.com/caarlos0/log"
-	"github.com/go-git/go-git/v5"
-
 	"github.com/catppuccin/cli/internal/pkg/structs"
+	"github.com/go-git/go-git/v5"
 )
 
 // HandleDir handles a directory, replacing certain parts with known attributes.

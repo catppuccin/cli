@@ -19,11 +19,11 @@ import (
 var Force bool
 
 func init() {
-	rootCmd.AddCommand(removeCmd)
-	removeCmd.Flags().BoolVarP(&Force, "force", "f", false, "Force removal of installed packages")
+	rootCmd.AddCommand(RemoveCmd)
+	RemoveCmd.Flags().BoolVarP(&Force, "Force", "F", false, "Force removal of installed packages")
 }
 
-var removeCmd = &cobra.Command{
+var RemoveCmd = &cobra.Command{
 	Use:   "uninstall [flags] packages...",
 	Short: "Removes the installed configs",
 	Long:  "Removes the config files for installed programs",
@@ -31,12 +31,12 @@ var removeCmd = &cobra.Command{
 		if len(args) == 0 {
 			return cmd.Help()
 		}
-		removeInstalled(args)
+		RemoveInstalled(args)
 		return nil
 	},
 }
 
-func removeInstalled(packages []string) {
+func RemoveInstalled(packages []string) {
 	for i := 0; i < len(packages); i++ {
 		sharedir := utils.ShareDir() // Directory of file
 		pkg := packages[i]           // Current package
@@ -54,6 +54,13 @@ func removeInstalled(packages []string) {
 		for e := 0; e < len(remove); e++ {
 			log.Infof("Removing %s...", remove[e])
 			os.Remove(remove[e])
+
+		}
+		if Force == true {
+			RepoLoc := path.Join(sharedir, pkg)
+			log.Info("Removing cloned directory!")
+			os.RemoveAll(RepoLoc)
+			log.Info("Deleted cloned Repo!")
 		}
 		os.Remove(pkgrcloc) // Remove the pkgrc
 		log.Info("Finished!")

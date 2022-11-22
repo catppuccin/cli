@@ -17,12 +17,14 @@ import (
 var (
 	Flavour string
 	Mode    string
+	// force   bool
 )
 
 func init() {
 	rootCmd.AddCommand(installCmd)
 	installCmd.Flags().StringVarP(&Flavour, "flavour", "f", "all", "Custom flavour")
 	installCmd.Flags().StringVarP(&Mode, "mode", "m", "default", "Custom mode")
+	installCmd.Flags().BoolVarP(&Force, "Force", "F", false, "Forcefully remove the cloned repository and install")
 }
 
 var installCmd = &cobra.Command{
@@ -111,6 +113,20 @@ func installer(packages []string) {
 		log.Info("Cloning " + programs[i].AppName + "...")
 		programName := programNames[i]
 		installDir := path.Join(utils.ShareDir(), programName)
+		repoExistsLoc := path.Join(utils.ShareDir(), programName)
+		_, err := os.Stat(repoExistsLoc)
+		if err == nil && Force == false {
+			log.Fatalf("Repository already exists. Please run the install with the -F=true flag again. ")
+		}
+		if Force == true {
+			log.Infof("Removing existing repository directory: %v", repoExistsLoc)
+			log.Info("Re-cloning the directory. ")
+			err := os.RemoveAll(repoExistsLoc)
+			if err != nil {
+				log.Errorf("Could not remove the repository directory")
+			}
+		}
+
 		baseDir := utils.CloneRepo(installDir, programName)
 		installLoc := programLocations[i]
 		ctprc := programs[i]
