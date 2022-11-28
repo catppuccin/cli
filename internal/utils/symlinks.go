@@ -72,8 +72,6 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 	 * to       - the location these were meant to be linked to, not including the actual path
 	 * finalDir - the actual path they are going to
 	 */
-	// fmt.Println("Making symlinks....")
-	log.Info("Making symlinks....")
 	// Regex last-item match
 	re, _ := regexp.Compile(`\/[^\/]*$`)
 	// Iterate over links and use makeLink to make the links
@@ -92,7 +90,6 @@ func MakeLinks(baseDir string, links []string, to string, finalDir string) []str
 			name = path.Join(to, shortPath)
 			HandleFilePath(finalDir, name)
 			// Just link the file
-			log.Infof("Linking: %s to %s via %s", link, finalDir, name)
 			// Use the name as name, the link as the from, and the finalDir as the to
 			symfiles = append(symfiles, makeLink(link, finalDir, name))
 		} else {

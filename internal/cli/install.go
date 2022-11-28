@@ -44,9 +44,13 @@ func installer(packages []string) {
 	// Hard-coded variables, will add functionality to change these via flags
 	log.DecreasePadding()
 	log.Info("Installing packages...")
+	log.IncreasePadding()
 	for i := 0; i < len(packages); i++ {
 		log.Infof(packages[i])
 	}
+	log.ResetPadding()
+	log.Info("Downloading packages...")
+	log.IncreasePadding()
 	org := utils.GetEnv("ORG_OVERRIDE", "catppuccin")
 	var success []string
 	for i := 0; i < len(packages); i++ {
@@ -63,7 +67,8 @@ func installer(packages []string) {
 			success = append(success, string(repo))
 		}
 	}
-
+	log.ResetPadding()
+	log.IncreasePadding()
 	log.Info("Checking for installed packages:")
 	programs := []structs.Program{}
 	programLocations := []string{}
@@ -110,7 +115,9 @@ func installer(packages []string) {
 		}
 	}
 	for i := 0; i < len(programNames); i++ {
+		log.ResetPadding()
 		log.Info("Cloning " + programs[i].AppName + "...")
+		log.IncreasePadding()
 		programName := programNames[i]
 		installDir := path.Join(utils.ShareDir(), programName)
 		repoExistsLoc := path.Join(utils.ShareDir(), programName)
@@ -121,10 +128,7 @@ func installer(packages []string) {
 		if Force == true {
 			log.Infof("Removing existing repository directory: %v", repoExistsLoc)
 			log.Info("Re-cloning the directory. ")
-			err := os.RemoveAll(repoExistsLoc)
-			if err != nil {
-				log.Errorf("Could not remove the repository directory")
-			}
+			RemoveInstalled([]string{programName})
 		}
 
 		baseDir := utils.CloneRepo(installDir, programName)
