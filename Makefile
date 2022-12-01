@@ -1,4 +1,4 @@
 cli: tidy
-  go build ./cmd/ctp -o build/
+	go build -o build/ ./cmd/ctp
 tidy:
-  go mod tidy
+	go mod tidy

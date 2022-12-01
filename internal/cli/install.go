@@ -143,7 +143,8 @@ func installer(packages []string) {
 		}
 		for _, hook := range ctprc.Installation.Hooks.Install {
 			if err := hook.Run(); err != nil {
-				fmt.Println(err)
+				log.Fatalf("Failed to run hook.")
+				log.Debugf("%s", err)
 			}
 		}
 	}
