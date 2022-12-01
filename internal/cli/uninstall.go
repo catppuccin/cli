@@ -41,14 +41,29 @@ func RemoveInstalled(packages []string) {
 		sharedir := utils.ShareDir() // Directory of file
 		pkg := packages[i]           // Current package
 		pkgrcloc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
+		ctprcloc := path.Join(sharedir, fmt.Sprintf("%s/.catppuccin.yaml", pkg))
 		pkgrcfile, err := os.ReadFile(pkgrcloc)
+		ctprcfile, err := os.ReadFile(ctprcloc)
 		if err != nil {
 			log.Fatalf("Could not read %s.yaml", pkg)
 		}
 		var pkgrc structs.AppLocation
+		var ctprc structs.Program
 		err = yaml.Unmarshal(pkgrcfile, &pkgrc)
 		if err != nil {
 			log.Fatalf("Failed to read saved data for %v.", pkg)
+		}
+		err = yaml.Unmarshal(ctprcfile, &ctprc)
+		if err != nil {
+			log.Fatalf("Failed to read .catppuccin.yaml data for %v.", pkg)
+		}
+		log.Infof("Running uninstall hooks...")
+		hooks := ctprc.Installation.Hooks.Uninstall
+		for x := 0; x < len(hooks); x++ {
+			if err := hooks[x].Run(); err != nil {
+				log.Fatalf("Failed to run hook.")
+				log.Debugf("%s", err)
+			}
 		}
 		remove := pkgrc.Location
 		for e := 0; e < len(remove); e++ {
