@@ -72,7 +72,8 @@ func OSReadDir(root string) ([]string, error) {
 func CloneRepo(stagePath string, repo string) string {
 	org := GetEnv("ORG_OVERRIDE", "catppuccin")
 	_, err := git.PlainClone(stagePath, false, &git.CloneOptions{
-		URL: fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
+		URL:               fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	if err != nil {
 		log.Error("Could not clone repo")
