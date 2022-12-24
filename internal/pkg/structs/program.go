@@ -55,7 +55,13 @@ type Installation struct {
 	Hooks           Hooks           `yaml:"hooks"`
 }
 
+
 type Hooks struct {
+  Pre  HookOptions `yaml:"post"`
+  Post HookOptions `yaml:"post"`
+}
+
+type HookOptions struct {
 	Install   []Hook `yaml:"install"`
 	Uninstall []Hook `yaml:"uninstall"`
 }

@@ -58,7 +58,7 @@ func RemoveInstalled(packages []string) {
 			log.Fatalf("Failed to read .catppuccin.yaml data for %v.", pkg)
 		}
 		log.Infof("Running uninstall hooks...")
-		hooks := ctprc.Installation.Hooks.Uninstall
+		hooks := ctprc.Installation.Hooks.Post.Uninstall
 		for x := 0; x < len(hooks); x++ {
 			if err := hooks[x].Run(); err != nil {
 				log.Fatalf("Failed to run hook.")
