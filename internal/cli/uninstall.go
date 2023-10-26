@@ -42,7 +42,7 @@ func RemoveInstalled(packages []string) {
 		pkg := packages[i]           // Current package
 		pkgrcloc := path.Join(sharedir, fmt.Sprintf("%s.yaml", pkg))
 		ctprcloc := path.Join(sharedir, fmt.Sprintf("%s/.catppuccin.yaml", pkg))
-		pkgrcfile, err := os.ReadFile(pkgrcloc)
+		pkgrcfile, _ := os.ReadFile(pkgrcloc)
 		ctprcfile, err := os.ReadFile(ctprcloc)
 		if err != nil {
 			log.Fatalf("Could not read %s.yaml", pkg)
@@ -57,13 +57,12 @@ func RemoveInstalled(packages []string) {
 		if err != nil {
 			log.Fatalf("Failed to read .catppuccin.yaml data for %v.", pkg)
 		}
-		log.Infof("Running uninstall hooks...")
-		hooks := ctprc.Installation.Hooks.Post.Uninstall
-		for x := 0; x < len(hooks); x++ {
-			if err := hooks[x].Run(); err != nil {
-				log.Fatalf("Failed to run hook.")
-				log.Debugf("%s", err)
-			}
+
+		if ctprc.Installation.Hooks.Pre.Uninstall != nil {
+			log.Infof("Running pre-uninstall hooks...")
+			log.IncreasePadding()
+			utils.RunHooks(ctprc.Installation.Hooks.Pre.Uninstall)
+			log.ResetPadding()
 		}
 		remove := pkgrc.Location
 		for e := 0; e < len(remove); e++ {
@@ -71,13 +70,19 @@ func RemoveInstalled(packages []string) {
 			os.Remove(remove[e])
 
 		}
-		if Force == true {
+		if Force {
 			RepoLoc := path.Join(sharedir, pkg)
 			log.Info("Removing cloned directory!")
 			os.RemoveAll(RepoLoc)
 			log.Info("Deleted cloned Repo!")
 		}
 		os.Remove(pkgrcloc) // Remove the pkgrc
+		if ctprc.Installation.Hooks.Post.Uninstall != nil {
+			log.Infof("Running post-uninstall hooks...")
+			log.IncreasePadding()
+			utils.RunHooks(ctprc.Installation.Hooks.Post.Uninstall)
+			log.ResetPadding()
+		}
 		log.Info("Finished!")
 	}
 }

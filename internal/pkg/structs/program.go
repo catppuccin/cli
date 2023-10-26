@@ -55,10 +55,9 @@ type Installation struct {
 	Hooks           Hooks           `yaml:"hooks"`
 }
 
-
 type Hooks struct {
-  Pre  HookOptions `yaml:"post"`
-  Post HookOptions `yaml:"post"`
+	Pre  HookOptions `yaml:"pre"`
+	Post HookOptions `yaml:"post"`
 }
 
 type HookOptions struct {

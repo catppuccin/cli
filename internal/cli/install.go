@@ -121,19 +121,21 @@ func installer(packages []string) {
 		installLoc := programLocations[i]
 		ctprc := programs[i]
 		_, err := os.Stat(repoExistsLoc)
-		if err == nil && Force == false {
+		if err == nil && !Force {
 			log.Fatalf("Repository already exists. Please run the install with the -F=true flag again. ")
 		}
-		if Force == true {
+		if Force {
 			log.Infof("Removing existing repository directory: %v", repoExistsLoc)
 			log.Info("Re-cloning the directory. ")
 			RemoveInstalled([]string{programName})
 		}
 		log.ResetPadding()
-    log.Info("Running pre-install hooks...")
-    log.IncreasePadding()
-    utils.RunHooks(ctprc.Installation.Hooks.Post.Install)
-    log.ResetPadding()
+		if ctprc.Installation.Hooks.Pre.Install != nil {
+			log.Info("Running pre-install hooks...")
+			log.IncreasePadding()
+			utils.RunHooks(ctprc.Installation.Hooks.Pre.Install)
+			log.ResetPadding()
+		}
 		log.Info("Cloning " + programs[i].AppName + "...")
 		log.IncreasePadding()
 		baseDir := utils.CloneRepo(installDir, programName)
@@ -144,9 +146,11 @@ func installer(packages []string) {
 		if comments[i] != "" {
 			log.Info(comments[i])
 		}
-    log.ResetPadding()
-    log.Info("Running post-install hooks...")
-    utils.RunHooks(ctprc.Installation.Hooks.Post.Install)
+		log.ResetPadding()
+		if ctprc.Installation.Hooks.Post.Install != nil {
+			log.Info("Running post-install hooks...")
+			utils.RunHooks(ctprc.Installation.Hooks.Post.Install)
+		}
 	}
 	// nya~
 }

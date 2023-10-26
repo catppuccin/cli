@@ -9,6 +9,7 @@ package utils
 import (
 
 	// "log"
+
 	"os"
 	"path"
 
@@ -141,10 +142,10 @@ func GetTemplateDir(repo string) string {
 
 // RunHooks runs a list of hooks.
 func RunHooks(hooks []structs.Hook) {
-  for _, hook := range hooks {
-    if err := hook.Run(); err != nil {
-      log.Fatalf("Failed to run hook.")
-      log.Debugf("%s", err)
-    }
-  }
+	for _, hook := range hooks {
+		if err := hook.Run(); err != nil {
+			log.Fatalf("Failed to run hook.")
+			log.Debugf("%s", err)
+		}
+	}
 }
