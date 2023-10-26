@@ -39,9 +39,9 @@ You can simply build the cli with `make`. This will automatically install the re
 - To run the built image, run the command `docker run -it --rm --net=host ctp:latest help`.
 
 ## TODO
-- [ ] Hooks 
+- [x] Hooks 
   - [x] Install hooks
-  - [ ] Uninstall hooks
+  - [x] Uninstall hooks
 - [x] Command hooks: To execute shell scripts.  
 - [x] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
 - [x] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
