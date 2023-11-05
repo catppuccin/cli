@@ -56,6 +56,11 @@ type Installation struct {
 }
 
 type Hooks struct {
+	Pre  HookOptions `yaml:"pre"`
+	Post HookOptions `yaml:"post"`
+}
+
+type HookOptions struct {
 	Install   []Hook `yaml:"install"`
 	Uninstall []Hook `yaml:"uninstall"`
 }
@@ -85,7 +90,7 @@ func (h Hook) Run() error {
 	case HookTypeBrowser:
 		return browser.OpenURL(h.Args[0])
 	default:
-		return fmt.Errorf("%q is an invalid hook type", h.Type)
+		return fmt.Errorf("%q is an invalid hook type - .catppuccin.yaml invalid", h.Type)
 	}
 }
 

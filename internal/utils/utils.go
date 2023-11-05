@@ -9,6 +9,7 @@ package utils
 import (
 
 	// "log"
+
 	"os"
 	"path"
 
@@ -137,4 +138,14 @@ func GetTemplateDir(repo string) string {
 	}
 	installPath := path.Join(cwd, repo)
 	return installPath
+}
+
+// RunHooks runs a list of hooks.
+func RunHooks(hooks []structs.Hook) {
+	for _, hook := range hooks {
+		if err := hook.Run(); err != nil {
+			log.Fatalf("Failed to run hook.")
+			log.Debugf("%s", err)
+		}
+	}
 }

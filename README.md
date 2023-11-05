@@ -31,14 +31,17 @@ It allows you to:
 - The foremost requirement to develop is to make sure that go version 1.19 is installed. 
 - Development and contribution guidelines along with the future development plans have been added to the [wiki](https://github.com/catppuccin/cli/wiki/Contributing).
 
+## Building
+You can simply build the cli with `make`. This will automatically install the required dependencies and build the program. The outputed executable will be in `builds/`. You can also use GoReleaser to build it for all platforms.
+
 ## Docker image 
 - The cli also has a Docker image. To build it, run `docker build --network=host -t ctp:latest .`.
 - To run the built image, run the command `docker run -it --rm --net=host ctp:latest help`.
 
 ## TODO
-- [ ] Hooks 
+- [x] Hooks 
   - [x] Install hooks
-  - [ ] Uninstall hooks
+  - [x] Uninstall hooks
 - [x] Command hooks: To execute shell scripts.  
 - [x] Web hooks: To handle `xdg-open`, `open` or equivalent command on Windows. 
 - [x] Rework remove function from scratch: Need to find a way to save the flavour user installs. 
