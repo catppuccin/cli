@@ -5,6 +5,8 @@ import (
 
 	"github.com/catppuccin/cli/query"
 	"github.com/catppuccin/cli/shared"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"golang.org/x/exp/slices"
 )
@@ -76,10 +78,30 @@ func (r *portsSubCommand) Run(ctx *shared.Context) error {
 				port,
 			}
 		})
-
-		component := NewListComponent(title, wrappedPorts)
+		
+		component := NewListComponent(ListConfig[PortWithMeta] {
+			items: wrappedPorts,
+			keys: []ListBinding[PortWithMeta]{
+				{
+					Key: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "choose")),
+					OnPress: func(model *ListComponent[PortWithMeta]) tea.Cmd {
+						model.showingPopup = true
+						return nil
+					},
+				},
+				{
+					Key: key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "jump")),
+					OnPress: func(model *ListComponent[PortWithMeta]) tea.Cmd {
+						model.showingPopup = !model.showingPopup
+						return nil
+					},
+				},
+			},
+			title: title,
+		})
 
 		component.Show()
+
 		return nil
 	}
 
