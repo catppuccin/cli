@@ -11,7 +11,7 @@
 	<a href="https://github.com/catppuccin/cli/contributors"><img src="https://img.shields.io/github/contributors/catppuccin/cli?colorA=363a4f&colorB=a6da95&style=for-the-badge"></a>
 </p>
 
-<img src="./assets/sample.jpg">
+<img src="./sample.jpg">
 
 ## Usage
 
